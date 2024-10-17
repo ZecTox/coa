@@ -114,16 +114,18 @@ def generate_pdf(data, specifications):
     elements.append(Spacer(1, 20))
 
     # Declaration Section
+    
     declaration_data = [
         [
             Paragraph("<b>Declaration:</b><br/>"
-                      "- GMO Status: Free from GMO<br/>"
-                      "- Irradiation Status: Non-irradiated<br/>"
-                      "- Prepared by<br/>"
-                      "- Executive – QC", normal_style),
+                    "<b>GMO Status:</b> Free from GMO<br/>"
+                    "<b>Irradiation Status:</b> Non-irradiated<br/>"
+                    "<b>Prepared by:</b><br/>"
+                    "Executive – QC", normal_style),
             Paragraph("<b>Allergen Statement:</b> Free from allergens<br/>"
-                      "<b>Storage Condition:</b> At room temperature<br/>"
-                      "<b>Approved by:</b> Head-QC/QA", normal_style)
+                    "<b>Storage Condition:</b> At room temperature<br/>"
+                    "<b>Approved by:</b><br/>"
+                    "Head-QC/QA", normal_style)
         ]
     ]
 
@@ -131,11 +133,15 @@ def generate_pdf(data, specifications):
     declaration_table = Table(declaration_data, colWidths=[300, 300])
     declaration_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0, colors.white),  # Invisible borders
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Align text to the left
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Add left padding
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10)   # Add right padding
     ]))
 
     elements.append(declaration_table)
     elements.append(Spacer(1, 20))
+
+
 
     # Footer image with increased height
     elements.append(Image(footer_path, width=500, height=100))  # Increased height for footer
