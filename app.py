@@ -62,44 +62,25 @@ def generate_pdf(data, specifications):
 
     # Specifications Table
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
-    specifications_data = [
-        ["Physical", "", "", ""],
-        ["Description", "", "", ""],
-        ["Moisture/Loss of Drying", "", "", ""],
-        ["Particle Size", "", "", ""],
-        ["Bulk Density", "", "", ""],
-        ["Tapped Density", "", "", ""],
-        ["Ash Content", "", "", ""],
-        ["pH", "", "", ""],
-        ["Fats", "", "", ""],
-        ["Protein", "", "", ""],
-        ["Solubility", "", "", ""],
-        ["Others", "", "", ""],
-        ["Cadmium", "", "", ""],
-        ["Arsenic", "", "", ""],
-        ["Mercury", "", "", ""],
-        ["Chemicals", "", "", ""],
-        ["Extraction", "", "", ""],
-        ["Pesticides", "", "", ""],
-        ["Pesticide Residue", "", "", ""],
-        ["Microbiological Profile", "", "", ""],
-        ["Total Plate Count", "", "", ""],
-        ["Yeasts and Mould Count", "", "", ""],
-        ["E. coli", "", "", ""],
-        ["Salmonella", "", "", ""],
-        ["Coliforms", "", "", ""]
-    ]
+    specifications_data = []
 
-    # Filtering out empty specification rows
-    specifications_data = [row for row in specifications_data if row[1] or row[2] or row[3]]
+    for param in st.session_state.specifications:
+        # Only include filled rows
+        if any(param):
+            specifications_data.append(param)
 
-    spec_table = Table([spec_headers] + specifications_data, colWidths=[150, 150, 100, 200])
-    spec_table.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-        ('BACKGROUND', (0, 0), (0, 0), colors.lightgrey),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT')
-    ]))
-    elements.append(spec_table)
+    # Creating a structured table for specifications
+    if len(specifications_data) > 0:
+        spec_table = Table([spec_headers] + specifications_data, colWidths=[150, 150, 100, 200])
+        spec_table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+            ('BACKGROUND', (0, 0), (0, 0), colors.lightgrey),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT')
+        ]))
+        elements.append(spec_table)
+    else:
+        elements.append(Paragraph("No specifications provided.", normal_style))
+
     elements.append(Spacer(1, 20))
 
     # Remarks Section
@@ -114,18 +95,17 @@ def generate_pdf(data, specifications):
     elements.append(Spacer(1, 20))
 
     # Declaration Section
-    
     declaration_data = [
         [
             Paragraph("<b>Declaration:</b><br/>"
-                    "<b>GMO Status:</b> Free from GMO<br/>"
-                    "<b>Irradiation Status:</b> Non-irradiated<br/>"
-                    "<b>Prepared by:</b><br/>"
-                    "Executive – QC", normal_style),
+                      "- GMO Status: Free from GMO<br/>"
+                      "- Irradiation Status: Non-irradiated<br/>"
+                      "- Prepared by<br/>"
+                      "- Executive – QC", normal_style),
             Paragraph("<b>Allergen Statement:</b> Free from allergens<br/>"
-                    "<b>Storage Condition:</b> At room temperature<br/>"
-                    "<b>Approved by:</b><br/>"
-                    "Head-QC/QA", normal_style)
+                      "<b>Storage Condition:</b> At room temperature<br/>"
+                      "<b>Approved by:</b><br/>"
+                      "Head-QC/QA", normal_style)
         ]
     ]
 
@@ -133,7 +113,7 @@ def generate_pdf(data, specifications):
     declaration_table = Table(declaration_data, colWidths=[300, 300])
     declaration_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0, colors.white),  # Invisible borders
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Align text to the left
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Add left padding
         ('RIGHTPADDING', (0, 0), (-1, -1), 10)   # Add right padding
     ]))
@@ -166,18 +146,32 @@ with st.form("coa_form"):
     extraction_ratio = st.text_input("Extraction Ratio")
     solvent = st.text_input("Extraction Solvent")
 
-    # Specifications input
+    # Specifications input table
     st.subheader("Specifications")
-    specifications = []
-    for i in range(5):  # Allow users to input specifications
-        param_name = st.text_input(f"Parameter Name {i+1}", key=f"param_name_{i}")
-        specification = st.text_input(f"Specification for {param_name}", key=f"specification_{i}")
-        result = st.text_input(f"Result for {param_name}", key=f"result_{i}")
-        method_protocol = st.text_input(f"Method/Protocols for {param_name}", key=f"method_protocol_{i}")
-
-        if param_name and specification:  # Only add if parameter name and specification are filled
-            specifications.append([param_name, specification, result, method_protocol])
     
+    # Initialize specifications in session state if it doesn't exist
+    if 'specifications' not in st.session_state:
+        st.session_state.specifications = [["", "", "", ""] for _ in range(5)]  # 5 rows of empty fields
+
+    # Create a table for specifications
+    for i in range(5):  # Allow users to input specifications
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            param_name = st.text_input(f"Parameter Name {i+1}", key=f"param_name_{i}")
+            st.session_state.specifications[i][0] = param_name  # Update session state
+
+        with col2:
+            specification = st.text_input(f"Specification for {param_name}", key=f"specification_{i}")
+            st.session_state.specifications[i][1] = specification  # Update session state
+
+        with col3:
+            result = st.text_input(f"Result for {param_name}", key=f"result_{i}")
+            st.session_state.specifications[i][2] = result  # Update session state
+
+        with col4:
+            method_protocol = st.text_input(f"Method/Protocols for {param_name}", key=f"method_protocol_{i}")
+            st.session_state.specifications[i][3] = method_protocol  # Update session state
+
     # Input for the name to save the PDF
     pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
     
@@ -202,7 +196,7 @@ if submitted:
             "solvent": solvent,
         }
 
-        pdf_buffer = generate_pdf(data, specifications)
+        pdf_buffer = generate_pdf(data, st.session_state.specifications)
 
         # Provide download button with user-defined filename
         st.download_button("Download COA PDF", data=pdf_buffer, file_name=f"{pdf_filename}.pdf", mime="application/pdf")
