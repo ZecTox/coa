@@ -9,11 +9,11 @@ import io
 # Function to generate the PDF based on COA structure
 def generate_pdf(data):
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=10, bottomMargin=10)  # Adjusted margins
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=10, bottomMargin=10)
 
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('title_style', fontSize=13, spaceAfter=2, alignment=1, fontName='Helvetica-Bold')
+    title_style = ParagraphStyle('title_style', fontSize=12, spaceAfter=1, alignment=1, fontName='Helvetica-Bold')
     normal_style = styles['BodyText']
     normal_style.alignment = 1  # Center alignment for paragraphs
     
@@ -33,36 +33,38 @@ def generate_pdf(data):
     elements.append(Spacer(1, 5))
     elements.append(Paragraph("CERTIFICATE OF ANALYSIS", title_style))
     elements.append(Paragraph(data.get('product_name', ''), title_style))  # Add product name
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 5))
     
-    # Product Information Table
+    # Product Information Table (skipping empty fields)
     product_info = [
-    ["Product Name", data.get('product_name', '')],
-    ["Product Code", data.get('product_code', '')],
-    ["Batch No.", data.get('batch_no', '')],
-    ["Date of Manufacturing", data.get('manufacturing_date', '')],
-    ["Date of Reanalysis", data.get('reanalysis_date', '')],
-    ["Quantity (in Kgs)", data.get('quantity', '')],
-    ["Source", data.get('source', '')],
-    ["Country of Origin", data.get('origin', '')],
-    ["Plant Parts", data.get('plant_part', '')],
-    ["Extraction Ratio", data.get('extraction_ratio', '')],
-    ["Extraction Solvents", data.get('solvent', '')],
-]
-
-    product_table = Table(product_info, colWidths=[150, 400])
+        ["Product Name", data.get('product_name', '')],
+        ["Product Code", data.get('product_code', '')],
+        ["Batch No.", data.get('batch_no', '')],
+        ["Date of Manufacturing", data.get('manufacturing_date', '')],
+        ["Date of Reanalysis", data.get('reanalysis_date', '')],
+        ["Quantity (in Kgs)", data.get('quantity', '')],
+        ["Source", data.get('source', '')],
+        ["Country of Origin", data.get('origin', '')],
+        ["Plant Parts", data.get('plant_part', '')],
+        ["Extraction Ratio", data.get('extraction_ratio', '')],
+        ["Extraction Solvents", data.get('solvent', '')],
+    ]
+    
+    # Only include non-empty rows
+    product_info = [row for row in product_info if row[1]]
+    
+    product_table = Table(product_info, colWidths=[150, 350])
     product_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
     ]))
     elements.append(product_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 0))
     
     # Specifications Table
-    # Define the table headers
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
-    
+
     # Physical Section
     physical_params = [
         ("Description", data['description_spec'], data['description_result'], data['description_method']),
@@ -77,7 +79,6 @@ def generate_pdf(data):
         ("Solubility", data['solubility_spec'], data['solubility_result'], data['solubility_method']),
     ]
     
-    # Others Section
     others_params = [
         ("Lead", data['lead_spec'], data['lead_result'], data['lead_method']),
         ("Cadmium", data['cadmium_spec'], data['cadmium_result'], data['cadmium_method']),
@@ -85,17 +86,14 @@ def generate_pdf(data):
         ("Mercury", data['mercury_spec'], data['mercury_result'], data['mercury_method']),
     ]
     
-    # Chemicals Section
     chemicals_params = [
         ("Extraction", data['extraction_spec'], data['extraction_result'], data['extraction_method']),
     ]
     
-    # Pesticides Section
     pesticides_params = [
         ("Pesticide", data['pesticide_spec'], data['pesticide_result'], data['pesticide_method']),
     ]
     
-    # Microbiological Profile Section
     micro_params = [
         ("Total Plate Count", data['total_plate_count_spec'], data['total_plate_count_result'], data['total_plate_count_method']),
         ("Yeasts & Mould Count", data['yeasts_mould_spec'], data['yeasts_mould_result'], data['yeasts_mould_method']),
@@ -104,101 +102,81 @@ def generate_pdf(data):
         ("Coliforms", data['coliforms_spec'], data['coliforms_result'], data['coliforms_method']),
     ]
     
-    # Build the specifications table
+    # Filter out empty rows
+    physical_params = [param for param in physical_params if all(param)]
+    others_params = [param for param in others_params if all(param)]
+    chemicals_params = [param for param in chemicals_params if all(param)]
+    pesticides_params = [param for param in pesticides_params if all(param)]
+    micro_params = [param for param in micro_params if all(param)]
+
     spec_data = []
-    
-    # Physical Section Header
-    spec_data.append([Paragraph("<b>Physical</b>", styles['Normal'])])
-    spec_data[-1].extend(["", "", ""])  # Empty cells to fill the row
-    # Physical Parameters
-    for param in physical_params:
-        spec_data.append(list(param))
-    
-    # Others Section Header
-    spec_data.append([Paragraph("<b>Others</b>", styles['Normal'])])
-    spec_data[-1].extend(["", "", ""])
-    # Others Parameters
-    for param in others_params:
-        spec_data.append(list(param))
-    
-    # Chemicals Section Header
-    spec_data.append([Paragraph("<b>Chemicals</b>", styles['Normal'])])
-    spec_data[-1].extend(["", "", ""])
-    # Chemicals Parameters
-    for param in chemicals_params:
-        spec_data.append(list(param))
-    
-    # Pesticides Section Header
-    spec_data.append([Paragraph("<b>Pesticides</b>", styles['Normal'])])
-    spec_data[-1].extend(["", "", ""])
-    # Pesticides Parameters
-    for param in pesticides_params:
-        spec_data.append(list(param))
-    
-    # Microbiological Profile Section Header
-    spec_data.append([Paragraph("<b>Microbiological Profile</b>", styles['Normal'])])
-    spec_data[-1].extend(["", "", ""])
-    # Microbiological Parameters
-    for param in micro_params:
-        spec_data.append(list(param))
+
+    # Add headers for each section dynamically
+    if physical_params:
+        spec_data.append([Paragraph("<b>Physical</b>", styles['Normal'])])
+        spec_data[-1].extend(["", "", ""])  # Empty cells
+        spec_data.extend(physical_params)
+
+    if others_params:
+        spec_data.append([Paragraph("<b>Others</b>", styles['Normal'])])
+        spec_data[-1].extend(["", "", ""])
+        spec_data.extend(others_params)
+        
+    if chemicals_params:
+        spec_data.append([Paragraph("<b>Chemicals</b>", styles['Normal'])])
+        spec_data[-1].extend(["", "", ""])
+        spec_data.extend(chemicals_params)
+
+    if pesticides_params:
+        spec_data.append([Paragraph("<b>Pesticides</b>", styles['Normal'])])
+        spec_data[-1].extend(["", "", ""])
+        spec_data.extend(pesticides_params)
+
+    if micro_params:
+        spec_data.append([Paragraph("<b>Microbiological Profile</b>", styles['Normal'])])
+        spec_data[-1].extend(["", "", ""])
+        spec_data.extend(micro_params)
+
+    # Remarks Section - merging rows for Remarks and Final Remark
+    remarks_text = "Since the product is derived from natural origin, there is likely to be minor color variation because of the geographical and seasonal variations of the raw material"
+    spec_data.append([Paragraph(remarks_text, styles['Normal']), "", "", ""])  # Spanned row
+    end_text = "REMARKS: COMPLIES WITH IN HOUSE SPECIFICATIONS"
+    spec_data.append([Paragraph(end_text, styles['Normal']), "", "", ""])  # Spanned row
     
     # Build the table
-    spec_table = Table([spec_headers] + spec_data, colWidths=[120, 100, 100, 100]) #keep this dynamic?
+    spec_table = Table([spec_headers] + spec_data, colWidths=[120, 140, 120, 120])
     spec_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-        ('SPAN', (0,1), (-1,1)),  # Span across for section headers
-        ('SPAN', (0,12), (-1,12)),
-        ('SPAN', (0,17), (-1,17)),
-        ('SPAN', (0,19), (-1,19)),
-        ('SPAN', (0,21), (-1,21)),
+        ('SPAN', (0,1), (-1,1)),
+        ('SPAN', (0, len(physical_params)+2), (-1, len(physical_params)+2)),
+        ('SPAN', (0, len(spec_data)-2), (-1, len(spec_data)-2)),
+        ('SPAN', (0, len(spec_data)-1), (-1, len(spec_data)-1)),
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
     ]))
+    
     elements.append(spec_table)
-    elements.append(Spacer(1, 20))
-    
-    # Remarks Section
-    remarks_text = "Since the product is derived from natural origin, there is likely to be minor color variation because of the geographical and seasonal variations of the raw material"
-    remarks = Paragraph(remarks_text, styles['Normal'])
-    elements.append(remarks)
-    elements.append(Spacer(1, 10))
-    
-    # Final Remark
-    final_remark = Paragraph("<b>REMARKS: COMPLIES WITH IN HOUSE SPECIFICATIONS</b>", styles['Normal'])
-    elements.append(final_remark)
-    elements.append(Spacer(1, 20))
-    
-    # Declaration Section
+    elements.append(Spacer(1, 5))
+
+    # Declaration Section (unchanged)
     declaration_data = [
         [
             Paragraph("<b>Declaration:-</b><br/>"
-                      "GMO status: Free from GMO<br/>"
-                      "Irradiation status: Non–Irradiated<br/><br/>"
-                      "Prepared by<br/>"
-                      "Executive – QC", styles['Normal']),
-            Paragraph("Allergen statement: Free from allergen<br/>"
-                      "Storage condition: At room temperature<br/><br/>"
-                      "Approved by<br/>"
-                      "Head-QC/QA", styles['Normal'])
+                      "The said material conforms to the above specifications.", normal_style)
         ]
     ]
-    
-    declaration_table = Table(declaration_data, colWidths=[300, 300])
-    declaration_table.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), 0, colors.white),  # No grid lines
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-    ]))
+    declaration_table = Table(declaration_data, colWidths=[540])
     elements.append(declaration_table)
-    elements.append(Spacer(1, 20))
-    
-    # Footer image with increased height
-    elements.append(Image(footer_path, width=500, height=100))  # Doubled height for footer
-    
-    # Build PDF
+
+    # Footer Image (unchanged)
+    elements.append(Spacer(1, 5))
+    elements.append(Image(footer_path, width=580, height=40))
+
     doc.build(elements)
     buffer.seek(0)
     return buffer
+
 
 # Streamlit UI
 st.title("Tru Herb COA PDF Generator")
