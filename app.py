@@ -141,8 +141,6 @@ def generate_pdf(data, specifications):
     elements.append(declaration_table)
     elements.append(Spacer(1, 20))
 
-
-
     # Footer image with increased height
     elements.append(Image(footer_path, width=500, height=100))  # Increased height for footer
 
