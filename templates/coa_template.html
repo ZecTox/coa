@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Certificate of Analysis</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .header {
+        text-align: center;
+      }
+      .header img {
+        width: 100px;
+        height: 40px;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+      .product-info,
+      .specifications,
+      .declaration {
+        margin-top: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+      .section-title {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        text-align: center;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 50px;
+      }
+      .footer img {
+        width: 580px;
+        height: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="{{ logo_path }}" alt="Tru Herb Logo" />
+      <div class="title">CERTIFICATE OF ANALYSIS</div>
+      <div class="title">{{ product_name }}</div>
+    </div>
+
+    <div class="product-info">
+      <table>
+        {% for key, value in product_info.items() %}
+        <tr>
+          <th>{{ key }}</th>
+          <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="specifications">
+      <table>
+        <tr>
+          <th>Parameter</th>
+          <th>Specification</th>
+          <th>Result</th>
+          <th>Method</th>
+        </tr>
+        {% for section, params in specifications.items() %}
+        <tr>
+          <td colspan="4" class="section-title">{{ section }}</td>
+        </tr>
+        {% for param in params %}
+        <tr>
+          <td>{{ param.Parameter }}</td>
+          <td>{{ param.Specification }}</td>
+          <td>{{ param.Result }}</td>
+          <td>{{ param.Method }}</td>
+        </tr>
+        {% endfor %} {% endfor %}
+        <tr>
+          <td colspan="4">{{ remarks }}</td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            <strong>REMARKS:</strong> COMPLIES WITH IN HOUSE SPECIFICATIONS
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="declaration">
+      <strong>Declaration:</strong><br />
+      The said material conforms to the above specifications.
+    </div>
+
+    <div class="footer">
+      <img src="{{ footer_path }}" alt="Footer Image" />
+    </div>
+  </body>
+</html>
