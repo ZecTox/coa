@@ -30,14 +30,16 @@ def generate_pdf(data):
 
     # Add logo and title at the top
     elements.append(Image(logo_path, width=100, height=40))
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 3))
     elements.append(Paragraph("CERTIFICATE OF ANALYSIS", title_style))
     elements.append(Paragraph(data.get('product_name', ''), title_style))  # Add product name
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 3))
 
     # Product Information Table (skipping empty fields)
     product_info = [
         ["Product Name", data.get('product_name', '')],
+        ["Chemical Name", data.get('chemical_name', '')],  # New row
+        ["CAS No.", data.get('cas_no', '')],  # New row
         ["Product Code", data.get('product_code', '')],
         ["Batch No.", data.get('batch_no', '')],
         ["Date of Manufacturing", data.get('manufacturing_date', '')],
@@ -48,6 +50,7 @@ def generate_pdf(data):
         ["Plant Parts", data.get('plant_part', '')],
         ["Extraction Ratio", data.get('extraction_ratio', '')],
         ["Extraction Solvents", data.get('solvent', '')],
+        ["Botanical Name", data.get('botanical_name', '')],
     ]
 
     # Only include non-empty rows
@@ -61,7 +64,7 @@ def generate_pdf(data):
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ]))
         elements.append(product_table)
-        elements.append(Spacer(1, 10))
+        elements.append(Spacer(1, 0))
 
     # Specifications Table
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
@@ -69,6 +72,7 @@ def generate_pdf(data):
     # Define sections
     sections = {
         "Physical": [
+            ("Identification", data['identification_spec'], data['identification_result'], data['identification_method']),
             ("Description", data['description_spec'], data['description_result'], data['description_method']),
             ("Moisture/Loss of Drying", data['moisture_spec'], data['moisture_result'], data['moisture_method']),
             ("Particle Size", data['particle_size_spec'], data['particle_size_result'], data['particle_size_method']),
@@ -79,14 +83,20 @@ def generate_pdf(data):
             ("Fats", data['fats_spec'], data['fats_result'], data['fats_method']),
             ("Protein", data['protein_spec'], data['protein_result'], data['protein_method']),
             ("Solubility", data['solubility_spec'], data['solubility_result'], data['solubility_method']),
+            ("Limit of Oxalic Acid", data['oxalic_acid_spec'], data['oxalic_acid_result'], data['oxalic_acid_method']),
+            ("Limit of NaCl", data['nacl_spec'], data['nacl_result'], data['nacl_method']),
+            ("Sulphates", data['sulphates_spec'], data['sulphates_result'], data['sulphates_method']),
+            ("Chloride", data['chloride_spec'], data['chloride_result'], data['chloride_method']),
         ],
         "Others": [
+            ("Heavy Metals", data['heavy_metals_spec'], data['heavy_metals_result'], data['heavy_metals_method']),
             ("Lead", data['lead_spec'], data['lead_result'], data['lead_method']),
             ("Cadmium", data['cadmium_spec'], data['cadmium_result'], data['cadmium_method']),
             ("Arsenic", data['arsenic_spec'], data['arsenic_result'], data['arsenic_method']),
             ("Mercury", data['mercury_spec'], data['mercury_result'], data['mercury_method']),
         ],
         "Chemicals": [
+            ("Assays", data['assays_spec'], data['assays_result'], data['assays_method']),
             ("Extraction", data['extraction_spec'], data['extraction_result'], data['extraction_method']),
         ],
         "Pesticides": [
@@ -103,21 +113,36 @@ def generate_pdf(data):
 
     spec_data = [spec_headers]
 
+    # Add sections to spec_data
     for section, params in sections.items():
         if any(param[1:] for param in params):
             spec_data.append([Paragraph(f"<b>{section}</b>", styles['Normal']), "", "", ""])
             spec_data.extend(params)
 
+    # Define a bold and centered style for the end text
+    bold_center_style = ParagraphStyle(
+        'bold_center',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        alignment=1  # Center alignment
+    )
+
     # Remarks Section - merging rows for Remarks and Final Remark
     remarks_text = "Since the product is derived from natural origin, there is likely to be minor color variation because of the geographical and seasonal variations of the raw material"
     end_text = "REMARKS: COMPLIES WITH IN HOUSE SPECIFICATIONS"
+
     spec_data.append([Paragraph(remarks_text, styles['Normal']), "", "", ""])
-    spec_data.append([Paragraph(end_text, styles['Normal']), "", "", ""])
+    spec_data.append([Paragraph(end_text, bold_center_style), "", "", ""])
 
     # Build the table
     spec_table = Table(spec_data, colWidths=[120, 140, 120, 120])
     spec_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('SPAN', (0, 1), (-1, 1)),  # Span the Physical section header
+        ('SPAN', (0, len(sections["Physical"])+2), (-1, len(sections["Physical"])+2)),  # Span the Others section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+3), (-1, len(sections["Physical"])+len(sections["Others"])+3)),  # Span the Chemicals section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+4), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+4)),  # Span the Pesticides section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+len(sections["Pesticides"])+5), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+len(sections["Pesticides"])+5)),  # Span the Microbiological Profile section header
         ('SPAN', (0, len(spec_data)-2), (-1, len(spec_data)-2)),  # Span the remarks row
         ('SPAN', (0, len(spec_data)-1), (-1, len(spec_data)-1)),  # Span the final remark row
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -133,8 +158,8 @@ def generate_pdf(data):
     elements.append(Paragraph(declaration_text, normal_style))
 
     # Footer Image
-    elements.append(Spacer(1, 10))
-    elements.append(Image(footer_path, width=580, height=40))
+    elements.append(Spacer(1, 1))
+    elements.append(Image(footer_path, width=500, height=60))
 
     # Build PDF
     doc.build(elements)
@@ -148,10 +173,13 @@ st.title("Tru Herb COA PDF Generator")
 with st.form("coa_form"):
     st.header("Product Information")
     product_name = st.text_input("Product Name")
+    botanical_name = st.text_input("Botanical Name")
+    chemical_name = st.text_input("Chemical Name")
+    cas_no = st.text_input("CAS No.")
     product_code = st.text_input("Product Code")
     batch_no = st.text_input("Batch No.")
-    manufacturing_date = st.date_input("Date of Manufacturing")
-    reanalysis_date = st.date_input("Date of Reanalysis")
+    manufacturing_date = st.text_input("Date of Manufacturing")  # Changed to text input
+    reanalysis_date = st.text_input("Date of Reanalysis")  # Changed to text input
     quantity = st.text_input("Quantity (in Kgs)")
     source = st.text_input("Source")
     origin = st.text_input("Country of Origin")
@@ -161,67 +189,76 @@ with st.form("coa_form"):
 
     st.header("Specifications")
     st.subheader("Physical")
+    identification_spec = st.text_input("Specification for Identification")
+    identification_result = st.text_input("Result for Identification")
+    identification_method = st.text_input("Method for Identification")
     description_spec = st.text_input("Specification for Description")
     description_result = st.text_input("Result for Description")
     description_method = st.text_input("Method for Description")
-
     moisture_spec = st.text_input("Specification for Moisture/Loss of Drying")
     moisture_result = st.text_input("Result for Moisture/Loss of Drying")
     moisture_method = st.text_input("Method for Moisture/Loss of Drying")
-
     particle_size_spec = st.text_input("Specification for Particle Size")
     particle_size_result = st.text_input("Result for Particle Size")
     particle_size_method = st.text_input("Method for Particle Size")
-
     bulk_density_spec = st.text_input("Specification for Bulk Density")
     bulk_density_result = st.text_input("Result for Bulk Density")
     bulk_density_method = st.text_input("Method for Bulk Density")
-
     tapped_density_spec = st.text_input("Specification for Tapped Density")
     tapped_density_result = st.text_input("Result for Tapped Density")
     tapped_density_method = st.text_input("Method for Tapped Density")
-
     ash_contents_spec = st.text_input("Specification for Ash Contents")
     ash_contents_result = st.text_input("Result for Ash Contents")
     ash_contents_method = st.text_input("Method for Ash Contents")
-
     ph_spec = st.text_input("Specification for pH")
     ph_result = st.text_input("Result for pH")
     ph_method = st.text_input("Method for pH")
-
     fats_spec = st.text_input("Specification for Fats")
     fats_result = st.text_input("Result for Fats")
     fats_method = st.text_input("Method for Fats")
-
     protein_spec = st.text_input("Specification for Protein")
     protein_result = st.text_input("Result for Protein")
     protein_method = st.text_input("Method for Protein")
-
     solubility_spec = st.text_input("Specification for Solubility")
     solubility_result = st.text_input("Result for Solubility")
     solubility_method = st.text_input("Method for Solubility")
+    oxalic_acid_spec = st.text_input("Specification for Limit of Oxalic Acid")
+    oxalic_acid_result = st.text_input("Result for Limit of Oxalic Acid")
+    oxalic_acid_method = st.text_input("Method for Limit of Oxalic Acid")
+    nacl_spec = st.text_input("Specification for Limit of NaCl")
+    nacl_result = st.text_input("Result for Limit of NaCl")
+    nacl_method = st.text_input("Method for Limit of NaCl")
+    sulphates_spec = st.text_input("Specification for Sulphates")
+    sulphates_result = st.text_input("Result for Sulphates")
+    sulphates_method = st.text_input("Method for Sulphates")
+    chloride_spec = st.text_input("Specification for Chloride")
+    chloride_result = st.text_input("Result for Chloride")
+    chloride_method = st.text_input("Method for Chloride")
 
     st.subheader("Others")
+    heavy_metals_spec = st.text_input("Specification for Heavy Metals")
+    heavy_metals_result = st.text_input("Result for Heavy Metals")
+    heavy_metals_method = st.text_input("Method for Heavy Metals")
     lead_spec = st.text_input("Specification for Lead")
     lead_result = st.text_input("Result for Lead")
     lead_method = st.text_input("Method for Lead")
-
     cadmium_spec = st.text_input("Specification for Cadmium")
     cadmium_result = st.text_input("Result for Cadmium")
     cadmium_method = st.text_input("Method for Cadmium")
-
     arsenic_spec = st.text_input("Specification for Arsenic")
     arsenic_result = st.text_input("Result for Arsenic")
     arsenic_method = st.text_input("Method for Arsenic")
-
     mercury_spec = st.text_input("Specification for Mercury")
     mercury_result = st.text_input("Result for Mercury")
     mercury_method = st.text_input("Method for Mercury")
 
     st.subheader("Chemicals")
-    extraction_spec = st.text_input("Specification for Extraction")
-    extraction_result = st.text_input("Result for Extraction")
-    extraction_method = st.text_input("Method for Extraction")
+    assays_spec = st.text_input("Specification for Assays")
+    assays_result = st.text_input("Result for Assays")
+    assays_method = st.text_input("Method for Assays")
+    extraction_spec = st.text_input("Specification for Extraction Ratio")
+    extraction_result = st.text_input("Result for Extraction Ratio")
+    extraction_method = st.text_input("Method for Extraction Ratio")
 
     st.subheader("Pesticides")
     pesticide_spec = st.text_input("Specification for Pesticide")
@@ -232,19 +269,15 @@ with st.form("coa_form"):
     total_plate_count_spec = st.text_input("Specification for Total Plate Count")
     total_plate_count_result = st.text_input("Result for Total Plate Count")
     total_plate_count_method = st.text_input("Method for Total Plate Count")
-
     yeasts_mould_spec = st.text_input("Specification for Yeasts & Mould Count")
     yeasts_mould_result = st.text_input("Result for Yeasts & Mould Count")
     yeasts_mould_method = st.text_input("Method for Yeasts & Mould Count")
-
     e_coli_spec = st.text_input("Specification for E.coli")
     e_coli_result = st.text_input("Result for E.coli")
     e_coli_method = st.text_input("Method for E.coli")
-
     salmonella_spec = st.text_input("Specification for Salmonella")
     salmonella_result = st.text_input("Result for Salmonella")
     salmonella_method = st.text_input("Method for Salmonella")
-
     coliforms_spec = st.text_input("Specification for Coliforms")
     coliforms_result = st.text_input("Result for Coliforms")
     coliforms_method = st.text_input("Method for Coliforms")
@@ -262,16 +295,23 @@ if submitted:
     else:
         data = {
             "product_name": product_name,
+            "botanical_name": botanical_name,
+            "chemical_name": chemical_name,
+            "cas_no": cas_no,
             "product_code": product_code,
             "batch_no": batch_no,
-            "manufacturing_date": manufacturing_date.strftime("%Y-%m-%d"),
-            "reanalysis_date": reanalysis_date.strftime("%Y-%m-%d"),
+            "manufacturing_date": manufacturing_date,  # No conversion needed
+            "reanalysis_date": reanalysis_date,  # No conversion needed
             "quantity": quantity,
             "source": source,
             "origin": origin,
             "plant_part": plant_part,
             "extraction_ratio": extraction_ratio,
             "solvent": solvent,
+
+            "identification_spec": identification_spec,
+            "identification_result": identification_result,
+            "identification_method": identification_method,
 
             "description_spec": description_spec,
             "description_result": description_result,
@@ -313,6 +353,26 @@ if submitted:
             "solubility_result": solubility_result,
             "solubility_method": solubility_method,
 
+            "oxalic_acid_spec": oxalic_acid_spec,
+            "oxalic_acid_result": oxalic_acid_result,
+            "oxalic_acid_method": oxalic_acid_method,
+
+            "nacl_spec": nacl_spec,
+            "nacl_result": nacl_result,
+            "nacl_method": nacl_method,
+
+            "sulphates_spec": sulphates_spec,
+            "sulphates_result": sulphates_result,
+            "sulphates_method": sulphates_method,
+
+            "chloride_spec": chloride_spec,
+            "chloride_result": chloride_result,
+            "chloride_method": chloride_method,
+
+            "heavy_metals_spec": heavy_metals_spec,
+            "heavy_metals_result": heavy_metals_result,
+            "heavy_metals_method": heavy_metals_method,
+
             "lead_spec": lead_spec,
             "lead_result": lead_result,
             "lead_method": lead_method,
@@ -328,6 +388,10 @@ if submitted:
             "mercury_spec": mercury_spec,
             "mercury_result": mercury_result,
             "mercury_method": mercury_method,
+
+            "assays_spec": assays_spec,
+            "assays_result": assays_result,
+            "assays_method": assays_method,
 
             "extraction_spec": extraction_spec,
             "extraction_result": extraction_result,
