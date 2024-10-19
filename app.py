@@ -14,6 +14,7 @@ def generate_pdf(data):
     # Styles
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle('title_style', fontSize=12, spaceAfter=1, alignment=1, fontName='Helvetica-Bold')
+    title_style1 = ParagraphStyle('title_style1', fontSize=12, spaceAfter=0, alignment=1, fontName='Helvetica-Bold')
     normal_style = styles['BodyText']
     normal_style.alignment = 1  # Center alignment for paragraphs
 
@@ -150,16 +151,38 @@ def generate_pdf(data):
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
     ]))
     elements.append(spec_table)
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 2))
 
     # Declaration
-    elements.append(Paragraph("Declaration:", title_style))
-    declaration_text = "The said material conforms to the above specifications."
-    elements.append(Paragraph(declaration_text, normal_style))
+    elements.append(Paragraph("Declaration", title_style1))
+
+    # Declaration Table
+    declaration_data = [
+        ["GMO Status:", "Free from GMO", "", "Allergen statement:", "Free from allergen"],
+        ["Irradiation status:", "Non – Irradiated", "", "Storage condition:", "At room temperature"],
+        ["Prepared by", "Executive – QC", "", "Approved by", "Head-QC/QA"]
+    ]
+
+    declaration_table = Table(declaration_data, colWidths=[80, 150, 75, 100, 95])
+    declaration_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('ALIGN', (0, 0), (1, -1), 'LEFT'),
+        ('ALIGN', (3, 0), (4, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('SPAN', (2, 0), (2, 2)),  # Span the middle empty column for spacing
+    ]))
+
+    elements.append(declaration_table)
+
+    # Reduce the number of spacers between the specifications table and footer image
+    elements.append(Spacer(1, 3))  # Only one spacer as requested
 
     # Footer Image
-    elements.append(Spacer(1, 1))
-    elements.append(Image(footer_path, width=500, height=60))
+    elements.append(Image(footer_path, width=500, height=80))
 
     # Build PDF
     doc.build(elements)
