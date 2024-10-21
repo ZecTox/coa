@@ -70,55 +70,56 @@ def generate_pdf(data):
     # Specifications Table
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
 
-    # Define sections
+    # Define sections with filtering to exclude empty entries
     sections = {
         "Physical": [
-            ("Identification", data['identification_spec'], data['identification_result'], data['identification_method']),
-            ("Description", data['description_spec'], data['description_result'], data['description_method']),
-            ("Moisture/Loss of Drying", data['moisture_spec'], data['moisture_result'], data['moisture_method']),
-            ("Particle Size", data['particle_size_spec'], data['particle_size_result'], data['particle_size_method']),
-            ("Bulk Density", data['bulk_density_spec'], data['bulk_density_result'], data['bulk_density_method']),
-            ("Tapped Density", data['tapped_density_spec'], data['tapped_density_result'], data['tapped_density_method']),
-            ("Ash Contents", data['ash_contents_spec'], data['ash_contents_result'], data['ash_contents_method']),
-            ("pH", data['ph_spec'], data['ph_result'], data['ph_method']),
-            ("Fats", data['fats_spec'], data['fats_result'], data['fats_method']),
-            ("Protein", data['protein_spec'], data['protein_result'], data['protein_method']),
-            ("Solubility", data['solubility_spec'], data['solubility_result'], data['solubility_method']),
-            ("Limit of Oxalic Acid", data['oxalic_acid_spec'], data['oxalic_acid_result'], data['oxalic_acid_method']),
-            ("Limit of NaCl", data['nacl_spec'], data['nacl_result'], data['nacl_method']),
-            ("Sulphates", data['sulphates_spec'], data['sulphates_result'], data['sulphates_method']),
-            ("Chloride", data['chloride_spec'], data['chloride_result'], data['chloride_method']),
+            ("Identification", data['identification_spec'], data['identification_result'], data['identification_method']) if data['identification_spec'] and data['identification_result'] and data['identification_method'] else None,
+            ("Description", data['description_spec'], data['description_result'], data['description_method']) if data['description_spec'] and data['description_result'] and data['description_method'] else None,
+            ("Moisture/Loss of Drying", data['moisture_spec'], data['moisture_result'], data['moisture_method']) if data['moisture_spec'] and data['moisture_result'] and data['moisture_method'] else None,
+            ("Particle Size", data['particle_size_spec'], data['particle_size_result'], data['particle_size_method']) if data['particle_size_spec'] and data['particle_size_result'] and data['particle_size_method'] else None,
+            ("Bulk Density", data['bulk_density_spec'], data['bulk_density_result'], data['bulk_density_method']) if data['bulk_density_spec'] and data['bulk_density_result'] and data['bulk_density_method'] else None,
+            ("Tapped Density", data['tapped_density_spec'], data['tapped_density_result'], data['tapped_density_method']) if data['tapped_density_spec'] and data['tapped_density_result'] and data['tapped_density_method'] else None,
+            ("Ash Contents", data['ash_contents_spec'], data['ash_contents_result'], data['ash_contents_method']) if data['ash_contents_spec'] and data['ash_contents_result'] and data['ash_contents_method'] else None,
+            ("pH", data['ph_spec'], data['ph_result'], data['ph_method']) if data['ph_spec'] and data['ph_result'] and data['ph_method'] else None,
+            ("Fats", data['fats_spec'], data['fats_result'], data['fats_method']) if data['fats_spec'] and data['fats_result'] and data['fats_method'] else None,
+            ("Protein", data['protein_spec'], data['protein_result'], data['protein_method']) if data['protein_spec'] and data['protein_result'] and data['protein_method'] else None,
+            ("Solubility", data['solubility_spec'], data['solubility_result'], data['solubility_method']) if data['solubility_spec'] and data['solubility_result'] and data['solubility_method'] else None,
+            ("Limit of Oxalic Acid", data['oxalic_acid_spec'], data['oxalic_acid_result'], data['oxalic_acid_method']) if data['oxalic_acid_spec'] and data['oxalic_acid_result'] and data['oxalic_acid_method'] else None,
+            ("Limit of NaCl", data['nacl_spec'], data['nacl_result'], data['nacl_method']) if data['nacl_spec'] and data['nacl_result'] and data['nacl_method'] else None,
+            ("Sulphates", data['sulphates_spec'], data['sulphates_result'], data['sulphates_method']) if data['sulphates_spec'] and data['sulphates_result'] and data['sulphates_method'] else None,
+            ("Chloride", data['chloride_spec'], data['chloride_result'], data['chloride_method']) if data['chloride_spec'] and data['chloride_result'] and data['chloride_method'] else None,
         ],
         "Others": [
-            ("Heavy Metals", data['heavy_metals_spec'], data['heavy_metals_result'], data['heavy_metals_method']),
-            ("Lead", data['lead_spec'], data['lead_result'], data['lead_method']),
-            ("Cadmium", data['cadmium_spec'], data['cadmium_result'], data['cadmium_method']),
-            ("Arsenic", data['arsenic_spec'], data['arsenic_result'], data['arsenic_method']),
-            ("Mercury", data['mercury_spec'], data['mercury_result'], data['mercury_method']),
+            ("Heavy Metals", data['heavy_metals_spec'], data['heavy_metals_result'], data['heavy_metals_method']) if data['heavy_metals_spec'] and data['heavy_metals_result'] and data['heavy_metals_method'] else None,
+            ("Lead", data['lead_spec'], data['lead_result'], data['lead_method']) if data['lead_spec'] and data['lead_result'] and data['lead_method'] else None,
+            ("Cadmium", data['cadmium_spec'], data['cadmium_result'], data['cadmium_method']) if data['cadmium_spec'] and data['cadmium_result'] and data['cadmium_method'] else None,
+            ("Arsenic", data['arsenic_spec'], data['arsenic_result'], data['arsenic_method']) if data['arsenic_spec'] and data['arsenic_result'] and data['arsenic_method'] else None,
+            ("Mercury", data['mercury_spec'], data['mercury_result'], data['mercury_method']) if data['mercury_spec'] and data['mercury_result'] and data['mercury_method'] else None,
         ],
         "Chemicals": [
-            ("Assays", data['assays_spec'], data['assays_result'], data['assays_method']),
-            ("Extraction", data['extraction_spec'], data['extraction_result'], data['extraction_method']),
+            ("Assays", data['assays_spec'], data['assays_result'], data['assays_method']) if data['assays_spec'] and data['assays_result'] and data['assays_method'] else None,
+            ("Extraction", data['extraction_spec'], data['extraction_result'], data['extraction_method']) if data['extraction_spec'] and data['extraction_result'] and data['extraction_method'] else None,
         ],
         "Pesticides": [
-            ("Pesticide", data['pesticide_spec'], data['pesticide_result'], data['pesticide_method']),
+            ("Pesticide", data['pesticide_spec'], data['pesticide_result'], data['pesticide_method']) if data['pesticide_spec'] and data['pesticide_result'] and data['pesticide_method'] else None,
         ],
         "Microbiological Profile": [
-            ("Total Plate Count", data['total_plate_count_spec'], data['total_plate_count_result'], data['total_plate_count_method']),
-            ("Yeasts & Mould Count", data['yeasts_mould_spec'], data['yeasts_mould_result'], data['yeasts_mould_method']),
-            ("E.coli", data['e_coli_spec'], data['e_coli_result'], data['e_coli_method']),
-            ("Salmonella", data['salmonella_spec'], data['salmonella_result'], data['salmonella_method']),
-            ("Coliforms", data['coliforms_spec'], data['coliforms_result'], data['coliforms_method']),
+            ("Total Plate Count", data['total_plate_count_spec'], data['total_plate_count_result'], data['total_plate_count_method']) if data['total_plate_count_spec'] and data['total_plate_count_result'] and data['total_plate_count_method'] else None,
+            ("Yeasts & Mould Count", data['yeasts_mould_spec'], data['yeasts_mould_result'], data['yeasts_mould_method']) if data['yeasts_mould_spec'] and data['yeasts_mould_result'] and data['yeasts_mould_method'] else None,
+            ("E.coli", data['e_coli_spec'], data['e_coli_result'], data['e_coli_method']) if data['e_coli_spec'] and data['e_coli_result'] and data['e_coli_method'] else None,
+            ("Salmonella", data['salmonella_spec'], data['salmonella_result'], data['salmonella_method']) if data['salmonella_spec'] and data['salmonella_result'] and data['salmonella_method'] else None,
+            ("Coliforms", data['coliforms_spec'], data['coliforms_result'], data['coliforms_method']) if data['coliforms_spec'] and data['coliforms_result'] and data['coliforms_method'] else None,
         ]
     }
 
     spec_data = [spec_headers]
 
-    # Add sections to spec_data
+    # Add sections to spec_data with filtering
     for section, params in sections.items():
-        if any(param[1:] for param in params):
+        filtered_params = [param for param in params if param is not None]
+        if filtered_params:
             spec_data.append([Paragraph(f"<b>{section}</b>", styles['Normal']), "", "", ""])
-            spec_data.extend(params)
+            spec_data.extend(filtered_params)
 
     # Define a bold and centered style for the end text
     bold_center_style = ParagraphStyle(
