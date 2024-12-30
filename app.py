@@ -13,8 +13,8 @@ def generate_pdf(data):
 
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('title_style', fontSize=12, spaceAfter=1, alignment=1, fontName='Helvetica-Bold')
-    title_style1 = ParagraphStyle('title_style1', fontSize=12, spaceAfter=0, alignment=1, fontName='Helvetica-Bold')
+    title_style = ParagraphStyle('title_style', fontSize=13, spaceAfter=1, alignment=1, fontName='Helvetica-Bold')
+    title_style1 = ParagraphStyle('title_style1', fontSize=10, spaceAfter=0, alignment=1, fontName='Helvetica-Bold')
     normal_style = styles['BodyText']
     normal_style.alignment = 1  # Center alignment for paragraphs
 
@@ -38,31 +38,33 @@ def generate_pdf(data):
 
     # Product Information Table (skipping empty fields)
     product_info = [
-        ["Product Name", data.get('product_name', '')],
-        ["Chemical Name", data.get('chemical_name', '')],  # New row
-        ["CAS No.", data.get('cas_no', '')],  # New row
-        ["Product Code", data.get('product_code', '')],
-        ["Batch No.", data.get('batch_no', '')],
-        ["Date of Manufacturing", data.get('manufacturing_date', '')],
-        ["Date of Reanalysis", data.get('reanalysis_date', '')],
-        ["Quantity (in Kgs)", data.get('quantity', '')],
-        ["Source", data.get('source', '')],
-        ["Country of Origin", data.get('origin', '')],
-        ["Plant Parts", data.get('plant_part', '')],
-        ["Extraction Ratio", data.get('extraction_ratio', '')],
-        ["Extraction Solvents", data.get('solvent', '')],
-        ["Botanical Name", data.get('botanical_name', '')],
+        ["Product Name", Paragraph(data.get('product_name', ''), normal_style)],
+        ["Chemical Name", Paragraph(data.get('chemical_name', ''), normal_style)],
+        ["CAS No.", Paragraph(data.get('cas_no', ''), normal_style)],
+        ["Product Code", Paragraph(data.get('product_code', ''), normal_style)],
+        ["Batch No.", Paragraph(data.get('batch_no', ''), normal_style)],
+        ["Date of Manufacturing", Paragraph(data.get('manufacturing_date', ''), normal_style)],
+        ["Date of Reanalysis", Paragraph(data.get('reanalysis_date', ''), normal_style)],
+        ["Quantity (in Kgs)", Paragraph(data.get('quantity', ''), normal_style)],
+        ["Source", Paragraph(data.get('source', ''), normal_style)],
+        ["Country of Origin", Paragraph(data.get('origin', ''), normal_style)],
+        ["Plant Parts", Paragraph(data.get('plant_part', ''), normal_style)],
+        ["Extraction Ratio", Paragraph(data.get('extraction_ratio', ''), normal_style)],
+        ["Extraction Solvents", Paragraph(data.get('solvent', ''), normal_style)],
+        ["Botanical Name", Paragraph(data.get('botanical_name', ''), normal_style)],
     ]
 
     # Only include non-empty rows
-    product_info = [row for row in product_info if row[1]]
+    product_info = [row for row in product_info if row[1].text]
 
     if product_info:
-        product_table = Table(product_info, colWidths=[150, 350])
+        product_table = Table(product_info, colWidths=[140, 360])
         product_table.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligne   d
+            ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
         ]))
         elements.append(product_table)
         elements.append(Spacer(1, 0))
@@ -119,7 +121,9 @@ def generate_pdf(data):
         filtered_params = [param for param in params if param is not None]
         if filtered_params:
             spec_data.append([Paragraph(f"<b>{section}</b>", styles['Normal']), "", "", ""])
-            spec_data.extend(filtered_params)
+            spec_data.extend([
+                [Paragraph(str(item), normal_style) for item in param] for param in filtered_params
+            ])
 
     # Define a bold and centered style for the end text
     bold_center_style = ParagraphStyle(
@@ -137,7 +141,16 @@ def generate_pdf(data):
     spec_data.append([Paragraph(end_text, bold_center_style), "", "", ""])
 
     # Build the table
-    spec_table = Table(spec_data, colWidths=[120, 140, 120, 120])
+    total_width = 500  # Total width of all columns combined
+    num_columns = len(spec_data[0]) if spec_data else 4  # Get number of columns from data, default to 4
+    # Calculate widths - first column slightly smaller, second slightly larger, rest equal
+    col_widths = [
+        total_width * 0.24,  # 24% for first column
+        total_width * 0.28,  # 28% for second column
+        total_width * 0.24,  # 24% for third column
+        total_width * 0.24   # 24% for fourth column
+    ]
+    spec_table = Table(spec_data, colWidths=col_widths)
     spec_table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('SPAN', (0, 1), (-1, 1)),  # Span the Physical section header
@@ -150,6 +163,8 @@ def generate_pdf(data):
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligned
+        ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
     ]))
     elements.append(spec_table)
     elements.append(Spacer(1, 2))
@@ -159,9 +174,9 @@ def generate_pdf(data):
 
     # Declaration Table
     declaration_data = [
-        ["GMO Status:", "Free from GMO", "", "Allergen statement:", "Free from allergen"],
-        ["Irradiation status:", "Non – Irradiated", "", "Storage condition:", "At room temperature"],
-        ["Prepared by", "Executive – QC", "", "Approved by", "Head-QC/QA"]
+        ["GMO Status:", Paragraph("Free from GMO", normal_style), "", "Allergen statement:", Paragraph("Free from allergen", normal_style)],
+        ["Irradiation status:", Paragraph("Non – Irradiated", normal_style), "", "Storage condition:", Paragraph("At room temperature", normal_style)],
+        ["Prepared by", Paragraph("Executive – QC", normal_style), "", "Approved by", Paragraph("Head-QC/QA", normal_style)]
     ]
 
     declaration_table = Table(declaration_data, colWidths=[80, 150, 75, 100, 95])
@@ -169,7 +184,8 @@ def generate_pdf(data):
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('ALIGN', (0, 0), (1, -1), 'LEFT'),
         ('ALIGN', (3, 0), (4, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligned
+        ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ('RIGHTPADDING', (0, 0), (-1, -1), 0),
         ('TOPPADDING', (0, 0), (-1, -1), 0),
