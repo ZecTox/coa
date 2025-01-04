@@ -490,7 +490,8 @@ if preview_button:
         with col2:
             for page in doc:
                 pix = page.get_pixmap()
-                st.image(pix.tobytes(), caption=f"Page {page.number + 1}")
+                # Adjust the width and height as needed
+                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", width=900, use_column_width=False)
             st.success("Preview generated successfully!")
 
 # Handle PDF download
