@@ -5,6 +5,22 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import io
+import base64
+import fitz  # PyMuPDF
+import configparser
+
+# Initialize the configparser
+config = configparser.ConfigParser()
+
+# Read the config file
+config.read('.streamlit/config.toml')
+
+# Access configuration values
+# For example, if you have a section [settings] with a key 'theme'
+theme = config.get('settings', 'theme', fallback='default')
+
+# Use the configuration values in your app
+st.set_page_config(page_title="Tru Herb COA PDF Generator", layout="wide")
 
 # Function to generate the PDF based on COA structure
 def generate_pdf(data):
@@ -209,8 +225,11 @@ def generate_pdf(data):
 # Streamlit UI
 st.title("Tru Herb COA PDF Generator")
 
-# Form for user input
-with st.form("coa_form"):
+# Create two columns for layout
+col1, col2 = st.columns(2)
+
+# Form for user input in the left column
+with col1.form("coa_form"):
     st.header("Product Information")
     product_name = st.text_input("Product Name")
     botanical_name = st.text_input("Botanical Name")
@@ -325,153 +344,296 @@ with st.form("coa_form"):
     # Input for the name to save the PDF
     pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
 
-    submitted = st.form_submit_button("Generate and Download PDF")
+    # Preview button
+    preview_button = st.form_submit_button("Preview")
 
-if submitted:
-    # Ensure required fields are filled
-    required_fields = [product_name, batch_no, manufacturing_date, reanalysis_date]
-    if not all(required_fields):
-        st.error("Please fill in all required fields.")
-    else:
-        data = {
-            "product_name": product_name,
-            "botanical_name": botanical_name,
-            "chemical_name": chemical_name,
-            "cas_no": cas_no,
-            "product_code": product_code,
-            "batch_no": batch_no,
-            "manufacturing_date": manufacturing_date,  # No conversion needed
-            "reanalysis_date": reanalysis_date,  # No conversion needed
-            "quantity": quantity,
-            "source": source,
-            "origin": origin,
-            "plant_part": plant_part,
-            "extraction_ratio": extraction_ratio,
-            "solvent": solvent,
+    # Generate and download button
+    download_button = st.form_submit_button("Download PDF")
 
-            "identification_spec": identification_spec,
-            "identification_result": identification_result,
-            "identification_method": identification_method,
+# Handle preview in the right column
+if preview_button:
+    data = {
+        "product_name": product_name,
+        "botanical_name": botanical_name,
+        "chemical_name": chemical_name,
+        "cas_no": cas_no,
+        "product_code": product_code,
+        "batch_no": batch_no,
+        "manufacturing_date": manufacturing_date,  # No conversion needed
+        "reanalysis_date": reanalysis_date,  # No conversion needed
+        "quantity": quantity,
+        "source": source,
+        "origin": origin,
+        "plant_part": plant_part,
+        "extraction_ratio": extraction_ratio,
+        "solvent": solvent,
 
-            "description_spec": description_spec,
-            "description_result": description_result,
-            "description_method": description_method,
+        "identification_spec": identification_spec,
+        "identification_result": identification_result,
+        "identification_method": identification_method,
 
-            "moisture_spec": moisture_spec,
-            "moisture_result": moisture_result,
-            "moisture_method": moisture_method,
+        "description_spec": description_spec,
+        "description_result": description_result,
+        "description_method": description_method,
 
-            "particle_size_spec": particle_size_spec,
-            "particle_size_result": particle_size_result,
-            "particle_size_method": particle_size_method,
+        "moisture_spec": moisture_spec,
+        "moisture_result": moisture_result,
+        "moisture_method": moisture_method,
 
-            "bulk_density_spec": bulk_density_spec,
-            "bulk_density_result": bulk_density_result,
-            "bulk_density_method": bulk_density_method,
+        "particle_size_spec": particle_size_spec,
+        "particle_size_result": particle_size_result,
+        "particle_size_method": particle_size_method,
 
-            "tapped_density_spec": tapped_density_spec,
-            "tapped_density_result": tapped_density_result,
-            "tapped_density_method": tapped_density_method,
+        "bulk_density_spec": bulk_density_spec,
+        "bulk_density_result": bulk_density_result,
+        "bulk_density_method": bulk_density_method,
 
-            "ash_contents_spec": ash_contents_spec,
-            "ash_contents_result": ash_contents_result,
-            "ash_contents_method": ash_contents_method,
+        "tapped_density_spec": tapped_density_spec,
+        "tapped_density_result": tapped_density_result,
+        "tapped_density_method": tapped_density_method,
 
-            "ph_spec": ph_spec,
-            "ph_result": ph_result,
-            "ph_method": ph_method,
+        "ash_contents_spec": ash_contents_spec,
+        "ash_contents_result": ash_contents_result,
+        "ash_contents_method": ash_contents_method,
 
-            "fats_spec": fats_spec,
-            "fats_result": fats_result,
-            "fats_method": fats_method,
+        "ph_spec": ph_spec,
+        "ph_result": ph_result,
+        "ph_method": ph_method,
 
-            "protein_spec": protein_spec,
-            "protein_result": protein_result,
-            "protein_method": protein_method,
+        "fats_spec": fats_spec,
+        "fats_result": fats_result,
+        "fats_method": fats_method,
 
-            "solubility_spec": solubility_spec,
-            "solubility_result": solubility_result,
-            "solubility_method": solubility_method,
+        "protein_spec": protein_spec,
+        "protein_result": protein_result,
+        "protein_method": protein_method,
 
-            "oxalic_acid_spec": oxalic_acid_spec,
-            "oxalic_acid_result": oxalic_acid_result,
-            "oxalic_acid_method": oxalic_acid_method,
+        "solubility_spec": solubility_spec,
+        "solubility_result": solubility_result,
+        "solubility_method": solubility_method,
 
-            "nacl_spec": nacl_spec,
-            "nacl_result": nacl_result,
-            "nacl_method": nacl_method,
+        "oxalic_acid_spec": oxalic_acid_spec,
+        "oxalic_acid_result": oxalic_acid_result,
+        "oxalic_acid_method": oxalic_acid_method,
 
-            "sulphates_spec": sulphates_spec,
-            "sulphates_result": sulphates_result,
-            "sulphates_method": sulphates_method,
+        "nacl_spec": nacl_spec,
+        "nacl_result": nacl_result,
+        "nacl_method": nacl_method,
 
-            "chloride_spec": chloride_spec,
-            "chloride_result": chloride_result,
-            "chloride_method": chloride_method,
+        "sulphates_spec": sulphates_spec,
+        "sulphates_result": sulphates_result,
+        "sulphates_method": sulphates_method,
 
-            "heavy_metals_spec": heavy_metals_spec,
-            "heavy_metals_result": heavy_metals_result,
-            "heavy_metals_method": heavy_metals_method,
+        "chloride_spec": chloride_spec,
+        "chloride_result": chloride_result,
+        "chloride_method": chloride_method,
 
-            "lead_spec": lead_spec,
-            "lead_result": lead_result,
-            "lead_method": lead_method,
+        "heavy_metals_spec": heavy_metals_spec,
+        "heavy_metals_result": heavy_metals_result,
+        "heavy_metals_method": heavy_metals_method,
 
-            "cadmium_spec": cadmium_spec,
-            "cadmium_result": cadmium_result,
-            "cadmium_method": cadmium_method,
+        "lead_spec": lead_spec,
+        "lead_result": lead_result,
+        "lead_method": lead_method,
 
-            "arsenic_spec": arsenic_spec,
-            "arsenic_result": arsenic_result,
-            "arsenic_method": arsenic_method,
+        "cadmium_spec": cadmium_spec,
+        "cadmium_result": cadmium_result,
+        "cadmium_method": cadmium_method,
 
-            "mercury_spec": mercury_spec,
-            "mercury_result": mercury_result,
-            "mercury_method": mercury_method,
+        "arsenic_spec": arsenic_spec,
+        "arsenic_result": arsenic_result,
+        "arsenic_method": arsenic_method,
 
-            "assays_spec": assays_spec,
-            "assays_result": assays_result,
-            "assays_method": assays_method,
+        "mercury_spec": mercury_spec,
+        "mercury_result": mercury_result,
+        "mercury_method": mercury_method,
 
-            "extraction_spec": extraction_spec,
-            "extraction_result": extraction_result,
-            "extraction_method": extraction_method,
+        "assays_spec": assays_spec,
+        "assays_result": assays_result,
+        "assays_method": assays_method,
 
-            "pesticide_spec": pesticide_spec,
-            "pesticide_result": pesticide_result,
-            "pesticide_method": pesticide_method,
+        "extraction_spec": extraction_spec,
+        "extraction_result": extraction_result,
+        "extraction_method": extraction_method,
 
-            "total_plate_count_spec": total_plate_count_spec,
-            "total_plate_count_result": total_plate_count_result,
-            "total_plate_count_method": total_plate_count_method,
+        "pesticide_spec": pesticide_spec,
+        "pesticide_result": pesticide_result,
+        "pesticide_method": pesticide_method,
 
-            "yeasts_mould_spec": yeasts_mould_spec,
-            "yeasts_mould_result": yeasts_mould_result,
-            "yeasts_mould_method": yeasts_mould_method,
+        "total_plate_count_spec": total_plate_count_spec,
+        "total_plate_count_result": total_plate_count_result,
+        "total_plate_count_method": total_plate_count_method,
 
-            "e_coli_spec": e_coli_spec,
-            "e_coli_result": e_coli_result,
-            "e_coli_method": e_coli_method,
+        "yeasts_mould_spec": yeasts_mould_spec,
+        "yeasts_mould_result": yeasts_mould_result,
+        "yeasts_mould_method": yeasts_mould_method,
 
-            "salmonella_spec": salmonella_spec,
-            "salmonella_result": salmonella_result,
-            "salmonella_method": salmonella_method,
+        "e_coli_spec": e_coli_spec,
+        "e_coli_result": e_coli_result,
+        "e_coli_method": e_coli_method,
 
-            "coliforms_spec": coliforms_spec,
-            "coliforms_result": coliforms_result,
-            "coliforms_method": coliforms_method,
-        }
+        "salmonella_spec": salmonella_spec,
+        "salmonella_result": salmonella_result,
+        "salmonella_method": salmonella_method,
 
-        pdf_buffer = generate_pdf(data)
+        "coliforms_spec": coliforms_spec,
+        "coliforms_result": coliforms_result,
+        "coliforms_method": coliforms_method,
+    }
 
-        if pdf_buffer:
-            # Provide download button with user-defined filename
-            st.download_button(
-                label="Download COA PDF",
-                data=pdf_buffer,
-                file_name=f"{pdf_filename}.pdf",
-                mime="application/pdf"
-            )
+    pdf_buffer = generate_pdf(data)
 
-            # Success message
-            st.success("COA PDF generated successfully!")
+    if pdf_buffer:
+        # Use PyMuPDF to convert PDF to images
+        doc = fitz.open(stream=pdf_buffer, filetype="pdf")
+        # Display each page as an image in the right column
+        with col2:
+            for page in doc:
+                pix = page.get_pixmap()
+                st.image(pix.tobytes(), caption=f"Page {page.number + 1}")
+            st.success("Preview generated successfully!")
+
+# Handle PDF download
+if download_button:
+    data = {
+        "product_name": product_name,
+        "botanical_name": botanical_name,
+        "chemical_name": chemical_name,
+        "cas_no": cas_no,
+        "product_code": product_code,
+        "batch_no": batch_no,
+        "manufacturing_date": manufacturing_date,  # No conversion needed
+        "reanalysis_date": reanalysis_date,  # No conversion needed
+        "quantity": quantity,
+        "source": source,
+        "origin": origin,
+        "plant_part": plant_part,
+        "extraction_ratio": extraction_ratio,
+        "solvent": solvent,
+
+        "identification_spec": identification_spec,
+        "identification_result": identification_result,
+        "identification_method": identification_method,
+
+        "description_spec": description_spec,
+        "description_result": description_result,
+        "description_method": description_method,
+
+        "moisture_spec": moisture_spec,
+        "moisture_result": moisture_result,
+        "moisture_method": moisture_method,
+
+        "particle_size_spec": particle_size_spec,
+        "particle_size_result": particle_size_result,
+        "particle_size_method": particle_size_method,
+
+        "bulk_density_spec": bulk_density_spec,
+        "bulk_density_result": bulk_density_result,
+        "bulk_density_method": bulk_density_method,
+
+        "tapped_density_spec": tapped_density_spec,
+        "tapped_density_result": tapped_density_result,
+        "tapped_density_method": tapped_density_method,
+
+        "ash_contents_spec": ash_contents_spec,
+        "ash_contents_result": ash_contents_result,
+        "ash_contents_method": ash_contents_method,
+
+        "ph_spec": ph_spec,
+        "ph_result": ph_result,
+        "ph_method": ph_method,
+
+        "fats_spec": fats_spec,
+        "fats_result": fats_result,
+        "fats_method": fats_method,
+
+        "protein_spec": protein_spec,
+        "protein_result": protein_result,
+        "protein_method": protein_method,
+
+        "solubility_spec": solubility_spec,
+        "solubility_result": solubility_result,
+        "solubility_method": solubility_method,
+
+        "oxalic_acid_spec": oxalic_acid_spec,
+        "oxalic_acid_result": oxalic_acid_result,
+        "oxalic_acid_method": oxalic_acid_method,
+
+        "nacl_spec": nacl_spec,
+        "nacl_result": nacl_result,
+        "nacl_method": nacl_method,
+
+        "sulphates_spec": sulphates_spec,
+        "sulphates_result": sulphates_result,
+        "sulphates_method": sulphates_method,
+
+        "chloride_spec": chloride_spec,
+        "chloride_result": chloride_result,
+        "chloride_method": chloride_method,
+
+        "heavy_metals_spec": heavy_metals_spec,
+        "heavy_metals_result": heavy_metals_result,
+        "heavy_metals_method": heavy_metals_method,
+
+        "lead_spec": lead_spec,
+        "lead_result": lead_result,
+        "lead_method": lead_method,
+
+        "cadmium_spec": cadmium_spec,
+        "cadmium_result": cadmium_result,
+        "cadmium_method": cadmium_method,
+
+        "arsenic_spec": arsenic_spec,
+        "arsenic_result": arsenic_result,
+        "arsenic_method": arsenic_method,
+
+        "mercury_spec": mercury_spec,
+        "mercury_result": mercury_result,
+        "mercury_method": mercury_method,
+
+        "assays_spec": assays_spec,
+        "assays_result": assays_result,
+        "assays_method": assays_method,
+
+        "extraction_spec": extraction_spec,
+        "extraction_result": extraction_result,
+        "extraction_method": extraction_method,
+
+        "pesticide_spec": pesticide_spec,
+        "pesticide_result": pesticide_result,
+        "pesticide_method": pesticide_method,
+
+        "total_plate_count_spec": total_plate_count_spec,
+        "total_plate_count_result": total_plate_count_result,
+        "total_plate_count_method": total_plate_count_method,
+
+        "yeasts_mould_spec": yeasts_mould_spec,
+        "yeasts_mould_result": yeasts_mould_result,
+        "yeasts_mould_method": yeasts_mould_method,
+
+        "e_coli_spec": e_coli_spec,
+        "e_coli_result": e_coli_result,
+        "e_coli_method": e_coli_method,
+
+        "salmonella_spec": salmonella_spec,
+        "salmonella_result": salmonella_result,
+        "salmonella_method": salmonella_method,
+
+        "coliforms_spec": coliforms_spec,
+        "coliforms_result": coliforms_result,
+        "coliforms_method": coliforms_method,
+    }
+
+    pdf_buffer = generate_pdf(data)
+
+    if pdf_buffer:
+        # Provide download button with user-defined filename
+        st.download_button(
+            label="Download COA PDF",
+            data=pdf_buffer,
+            file_name=f"{pdf_filename}.pdf",
+            mime="application/pdf"
+        )
+
+        # Success message
+        st.success("COA PDF generated and ready for download!")
