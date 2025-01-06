@@ -225,13 +225,14 @@ def generate_pdf(data):
     return buffer
 
 # Streamlit UI
-st.title("Tru Herb COA PDF Generator")
+# st.title("Tru Herb COA PDF Generator")
 
 # Create two columns for layout
 col1, col2 = st.columns(2)
 
 # Form for user input in the left column
 with col1.form("coa_form"):
+    st.title("Tru Herb COA PDF Generator")
     st.header("Product Information")
     product_name = st.text_input("Product Name", value="X")
     product_code = st.text_input("Product Code", value="X")
@@ -531,9 +532,10 @@ if preview_button:
         doc = fitz.open(stream=pdf_buffer, filetype="pdf")
         # Display each page as an image in the right column
         with col2:
+            st.title("Preview Sectio")
             for page in doc:
                 pix = page.get_pixmap()
-                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", width=900, use_column_width=False)
+                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_column_width=True)
             st.success("Preview generated successfully!")
 
 # Handle PDF download
