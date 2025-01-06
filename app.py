@@ -231,7 +231,7 @@ col1, col2 = st.columns(2)
 # Form for user input in the left column
 with col1.form("coa_form"):
     st.header("Product Information")
-    product_name = st.text_input("Product Name")
+    product_name = st.text_input("Product Name", value="Product Name")
     botanical_name = st.text_input("Botanical Name")
     chemical_name = st.text_input("Chemical Name")
     cas_no = st.text_input("CAS No.")
@@ -638,3 +638,26 @@ if download_button:
 
         # Success message
         st.success("COA PDF generated and ready for download!")
+        
+# st.markdown(
+#     """
+#     <style>
+#     .input-row {
+#         display: flex;
+#         align-items: center;
+#         margin-bottom: 10px;
+#     }
+#     .input-row label {
+#         margin-right: 10px;
+#         font-weight: bold;
+#     }
+#     .input-row input {
+#         flex: 1;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
+
+# # Example usage in Streamlit
+# st.markdown('<div class="input-row"><label for="product_name">Product Name</label><input type="text" id="product_name" name="product_name"></div>', unsafe_allow_html=True)
