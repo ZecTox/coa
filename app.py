@@ -5,7 +5,6 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import io
-import base64
 import fitz  # PyMuPDF
 import configparser
 
@@ -16,7 +15,6 @@ config = configparser.ConfigParser()
 config.read('.streamlit/config.toml')
 
 # Access configuration values
-# For example, if you have a section [settings] with a key 'theme'
 theme = config.get('settings', 'theme', fallback='default')
 
 # Use the configuration values in your app
@@ -78,7 +76,7 @@ def generate_pdf(data):
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligne   d
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligned
             ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
         ]))
         elements.append(product_table)
@@ -637,26 +635,3 @@ if download_button:
 
         # Success message
         st.success("COA PDF generated and ready for download!")
-        
-# st.markdown(
-#     """
-#     <style>
-#     .input-row {
-#         display: flex;
-#         align-items: center;
-#         margin-bottom: 10px;
-#     }
-#     .input-row label {
-#         margin-right: 10px;
-#         font-weight: bold;
-#     }
-#     .input-row input {
-#         flex: 1;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True
-# )
-
-# # Example usage in Streamlit
-# st.markdown('<div class="input-row"><label for="product_name">Product Name</label><input type="text" id="product_name" name="product_name"></div>', unsafe_allow_html=True)
