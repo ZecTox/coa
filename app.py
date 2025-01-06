@@ -55,19 +55,18 @@ def generate_pdf(data):
     # Product Information Table (skipping empty fields)
     product_info = [
         ["Product Name", Paragraph(data.get('product_name', ''), normal_style)],
-        ["Chemical Name", Paragraph(data.get('chemical_name', ''), normal_style)],
-        ["CAS No.", Paragraph(data.get('cas_no', ''), normal_style)],
         ["Product Code", Paragraph(data.get('product_code', ''), normal_style)],
         ["Batch No.", Paragraph(data.get('batch_no', ''), normal_style)],
         ["Date of Manufacturing", Paragraph(data.get('manufacturing_date', ''), normal_style)],
         ["Date of Reanalysis", Paragraph(data.get('reanalysis_date', ''), normal_style)],
-        ["Quantity (in Kgs)", Paragraph(data.get('quantity', ''), normal_style)],
-        ["Source", Paragraph(data.get('source', ''), normal_style)],
-        ["Country of Origin", Paragraph(data.get('origin', ''), normal_style)],
-        ["Plant Parts", Paragraph(data.get('plant_part', ''), normal_style)],
+        ["Botanical Name", Paragraph(data.get('botanical_name', ''), normal_style)],
         ["Extraction Ratio", Paragraph(data.get('extraction_ratio', ''), normal_style)],
         ["Extraction Solvents", Paragraph(data.get('solvent', ''), normal_style)],
-        ["Botanical Name", Paragraph(data.get('botanical_name', ''), normal_style)],
+        ["Plant Parts", Paragraph(data.get('plant_part', ''), normal_style)],
+        ["CAS No.", Paragraph(data.get('cas_no', ''), normal_style)],
+        ["Chemical Name", Paragraph(data.get('chemical_name', ''), normal_style)],
+        ["Quantity (in Kgs)", Paragraph(data.get('quantity', ''), normal_style)],
+        ["Country of Origin", Paragraph(data.get('origin', ''), normal_style)],
     ]
 
     # Only include non-empty rows
@@ -232,19 +231,19 @@ col1, col2 = st.columns(2)
 with col1.form("coa_form"):
     st.header("Product Information")
     product_name = st.text_input("Product Name", value="Product Name")
-    botanical_name = st.text_input("Botanical Name")
-    chemical_name = st.text_input("Chemical Name")
-    cas_no = st.text_input("CAS No.")
     product_code = st.text_input("Product Code")
     batch_no = st.text_input("Batch No.")
     manufacturing_date = st.text_input("Date of Manufacturing")  # Changed to text input
     reanalysis_date = st.text_input("Date of Reanalysis")  # Changed to text input
-    quantity = st.text_input("Quantity (in Kgs)")
-    source = st.text_input("Source")
-    origin = st.text_input("Country of Origin")
-    plant_part = st.text_input("Plant Parts")
+    botanical_name = st.text_input("Botanical Name")
     extraction_ratio = st.text_input("Extraction Ratio")
     solvent = st.text_input("Extraction Solvents")
+    plant_part = st.text_input("Plant Parts")
+    cas_no = st.text_input("CAS No.")
+    chemical_name = st.text_input("Chemical Name")
+    quantity = st.text_input("Quantity (in Kgs)")
+    origin = st.text_input("Country of Origin")
+    # source = st.text_input("Source")
 
     st.header("Specifications")
     st.subheader("Physical")
@@ -362,7 +361,7 @@ if preview_button:
         "manufacturing_date": manufacturing_date,  # No conversion needed
         "reanalysis_date": reanalysis_date,  # No conversion needed
         "quantity": quantity,
-        "source": source,
+        # "source": source,
         "origin": origin,
         "plant_part": plant_part,
         "extraction_ratio": extraction_ratio,
@@ -506,7 +505,7 @@ if download_button:
         "manufacturing_date": manufacturing_date,  # No conversion needed
         "reanalysis_date": reanalysis_date,  # No conversion needed
         "quantity": quantity,
-        "source": source,
+        # "source": source,
         "origin": origin,
         "plant_part": plant_part,
         "extraction_ratio": extraction_ratio,
