@@ -63,7 +63,7 @@ def generate_pdf(data):
         ["Plant Parts", Paragraph(data.get('plant_part', ''), normal_style)],
         ["CAS No.", Paragraph(data.get('cas_no', ''), normal_style)],
         ["Chemical Name", Paragraph(data.get('chemical_name', ''), normal_style)],
-        ["Quantity (in Kgs)", Paragraph(data.get('quantity', ''), normal_style)],
+        ["Quantity", Paragraph(data.get('quantity', ''), normal_style)],
         ["Country of Origin", Paragraph(data.get('origin', ''), normal_style)],
     ]
 
@@ -90,7 +90,7 @@ def generate_pdf(data):
         "Physical": [
             ("Description", data['description_spec'], data['description_result'], data['description_method']) if data['description_spec'] and data['description_result'] and data['description_method'] else None,
             ("Identification", data['identification_spec'], data['identification_result'], data['identification_method']) if data['identification_spec'] and data['identification_result'] and data['identification_method'] else None,
-            ("Loss on Drying", data['Loss_on_Drying_spec'], data['Loss_on_Drying_result'], data['Loss_on_Drying_method']) if data['Loss_on_Drying_spec'] and data['Loss_on_Drying_result'] and data['Loss_on_Drying_method'] else None,
+            ("Loss on Drying", data['loss_on_drying_spec'], data['loss_on_drying_result'], data['loss_on_drying_method']) if data['loss_on_drying_spec'] and data['loss_on_drying_result'] and data['loss_on_drying_method'] else None,
             ("Moisture", data['moisture_spec'], data['moisture_result'], data['moisture_method']) if data['moisture_spec'] and data['moisture_result'] and data['moisture_method'] else None,
             ("Particle Size", data['particle_size_spec'], data['particle_size_result'], data['particle_size_method']) if data['particle_size_spec'] and data['particle_size_result'] and data['particle_size_method'] else None,
             ("Ash Contents", data['ash_contents_spec'], data['ash_contents_result'], data['ash_contents_method']) if data['ash_contents_spec'] and data['ash_contents_result'] and data['ash_contents_method'] else None,
@@ -99,7 +99,7 @@ def generate_pdf(data):
             ("Tapped Density", data['tapped_density_spec'], data['tapped_density_result'], data['tapped_density_method']) if data['tapped_density_spec'] and data['tapped_density_result'] and data['tapped_density_method'] else None,
             ("Solubility", data['solubility_spec'], data['solubility_result'], data['solubility_method']) if data['solubility_spec'] and data['solubility_result'] and data['solubility_method'] else None,
             ("pH", data['ph_spec'], data['ph_result'], data['ph_method']) if data['ph_spec'] and data['ph_result'] and data['ph_method'] else None,
-            ("Limit of NaCl", data['nacl_spec'], data['nacl_result'], data['nacl_method']) if data['nacl_spec'] and data['nacl_result'] and data['nacl_method'] else None,
+            ("Chlorides of NaCl", data['chlorides_nacl_spec'], data['chlorides_nacl_result'], data['chlorides_nacl_method']) if data['chlorides_nacl_spec'] and data['chlorides_nacl_result'] and data['chlorides_nacl_method'] else None,
             ("Sulphates", data['sulphates_spec'], data['sulphates_result'], data['sulphates_method']) if data['sulphates_spec'] and data['sulphates_result'] and data['sulphates_method'] else None,
             ("Fats", data['fats_spec'], data['fats_result'], data['fats_method']) if data['fats_spec'] and data['fats_result'] and data['fats_method'] else None,
             ("Protein", data['protein_spec'], data['protein_result'], data['protein_method']) if data['protein_spec'] and data['protein_result'] and data['protein_method'] else None,
@@ -109,7 +109,6 @@ def generate_pdf(data):
             
         ],
         "Others": [
-            # ("Heavy Metals", data['heavy_metals_spec'], data['heavy_metals_result'], data['heavy_metals_method']) if data['heavy_metals_spec'] and data['heavy_metals_result'] and data['heavy_metals_method'] else None,
             ("Lead", data['lead_spec'], data['lead_result'], data['lead_method']) if data['lead_spec'] and data['lead_result'] and data['lead_method'] else None,
             ("Cadmium", data['cadmium_spec'], data['cadmium_result'], data['cadmium_method']) if data['cadmium_spec'] and data['cadmium_result'] and data['cadmium_method'] else None,
             ("Arsenic", data['arsenic_spec'], data['arsenic_result'], data['arsenic_method']) if data['arsenic_spec'] and data['arsenic_result'] and data['arsenic_method'] else None,
@@ -124,10 +123,6 @@ def generate_pdf(data):
         "Residual Solvent": [
             ("Residual Solvent", data['residual_solvent_spec'], data['residual_solvent_result'], data['residual_solvent_method']) if data['residual_solvent_spec'] and data['residual_solvent_result'] and data['residual_solvent_method'] else None,
         ],
-        # "Chemicals": [
-        #     ("Assays", data['assays_spec'], data['assays_result'], data['assays_method']) if data['assays_spec'] and data['assays_result'] and data['assays_method'] else None,
-        #     ("Extraction", data['extraction_spec'], data['extraction_result'], data['extraction_method']) if data['extraction_spec'] and data['extraction_result'] and data['extraction_method'] else None,
-        # ],
         "Microbiological Profile": [
             ("Total Plate Count", data['total_plate_count_spec'], data['total_plate_count_result'], data['total_plate_count_method']) if data['total_plate_count_spec'] and data['total_plate_count_result'] and data['total_plate_count_method'] else None,
             ("Yeasts & Mould Count", data['yeasts_mould_spec'], data['yeasts_mould_result'], data['yeasts_mould_method']) if data['yeasts_mould_spec'] and data['yeasts_mould_result'] and data['yeasts_mould_method'] else None,
@@ -178,9 +173,9 @@ def generate_pdf(data):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('SPAN', (0, 1), (-1, 1)),  # Span the Physical section header
         ('SPAN', (0, len(sections["Physical"])+2), (-1, len(sections["Physical"])+2)),  # Span the Others section header
-        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+3), (-1, len(sections["Physical"])+len(sections["Others"])+3)),  # Span the Chemicals section header
-        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+4), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+4)),  # Span the Pesticides section header
-        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+len(sections["Pesticides"])+5), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Chemicals"])+len(sections["Pesticides"])+5)),  # Span the Microbiological Profile section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+3), (-1, len(sections["Physical"])+len(sections["Others"])+3)),  # Span the Assays section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Assays"])+4), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Assays"])+4)),  # Span the Pesticides section header
+        ('SPAN', (0, len(sections["Physical"])+len(sections["Others"])+len(sections["Assays"])+len(sections["Pesticides"])+5), (-1, len(sections["Physical"])+len(sections["Others"])+len(sections["Assays"])+len(sections["Pesticides"])+5)),  # Span the Microbiological Profile section header
         ('SPAN', (0, len(spec_data)-2), (-1, len(spec_data)-2)),  # Span the remarks row
         ('SPAN', (0, len(spec_data)-1), (-1, len(spec_data)-1)),  # Span the final remark row
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -238,115 +233,149 @@ col1, col2 = st.columns(2)
 # Form for user input in the left column
 with col1.form("coa_form"):
     st.header("Product Information")
-    product_name = st.text_input("Product Name", value="Product Name")
-    product_code = st.text_input("Product Code")
-    batch_no = st.text_input("Batch No.")
-    manufacturing_date = st.text_input("Date of Manufacturing")  # Changed to text input
-    reanalysis_date = st.text_input("Date of Reanalysis")  # Changed to text input
-    botanical_name = st.text_input("Botanical Name")
-    extraction_ratio = st.text_input("Extraction Ratio")
-    solvent = st.text_input("Extraction Solvents")
-    plant_part = st.text_input("Plant Parts")
-    cas_no = st.text_input("CAS No.")
-    chemical_name = st.text_input("Chemical Name")
-    quantity = st.text_input("Quantity (in Kgs)")
-    origin = st.text_input("Country of Origin")
-    # source = st.text_input("Source")
+    product_name = st.text_input("Product Name", value="X")
+    product_code = st.text_input("Product Code", value="X")
+    batch_no = st.text_input("Batch No.", value="X")
+    manufacturing_date = st.text_input("Date of Manufacturing", value="X")
+    reanalysis_date = st.text_input("Date of Reanalysis", value="X")
+    botanical_name = st.text_input("Botanical Name", value="X")
+    extraction_ratio = st.text_input("Extraction Ratio", value="X")
+    solvent = st.text_input("Extraction Solvents", value="X")
+    plant_part = st.text_input("Plant Parts", value="X")
+    cas_no = st.text_input("CAS No.", value="X")
+    chemical_name = st.text_input("Chemical Name", value="X")
+    quantity = st.text_input("Quantity", value="X")
+    origin = st.text_input("Country of Origin", value="India")
 
     st.header("Specifications")
     st.subheader("Physical")
-    identification_spec = st.text_input("Specification for Identification")
-    identification_result = st.text_input("Result for Identification")
-    identification_method = st.text_input("Method for Identification")
-    description_spec = st.text_input("Specification for Description")
-    description_result = st.text_input("Result for Description")
-    description_method = st.text_input("Method for Description")
-    moisture_spec = st.text_input("Specification for Moisture/Loss of Drying")
-    moisture_result = st.text_input("Result for Moisture/Loss of Drying")
-    moisture_method = st.text_input("Method for Moisture/Loss of Drying")
-    particle_size_spec = st.text_input("Specification for Particle Size")
-    particle_size_result = st.text_input("Result for Particle Size")
-    particle_size_method = st.text_input("Method for Particle Size")
-    bulk_density_spec = st.text_input("Specification for Bulk Density")
-    bulk_density_result = st.text_input("Result for Bulk Density")
-    bulk_density_method = st.text_input("Method for Bulk Density")
-    tapped_density_spec = st.text_input("Specification for Tapped Density")
-    tapped_density_result = st.text_input("Result for Tapped Density")
-    tapped_density_method = st.text_input("Method for Tapped Density")
-    ash_contents_spec = st.text_input("Specification for Ash Contents")
-    ash_contents_result = st.text_input("Result for Ash Contents")
-    ash_contents_method = st.text_input("Method for Ash Contents")
-    ph_spec = st.text_input("Specification for pH")
-    ph_result = st.text_input("Result for pH")
-    ph_method = st.text_input("Method for pH")
-    fats_spec = st.text_input("Specification for Fats")
-    fats_result = st.text_input("Result for Fats")
-    fats_method = st.text_input("Method for Fats")
-    protein_spec = st.text_input("Specification for Protein")
-    protein_result = st.text_input("Result for Protein")
-    protein_method = st.text_input("Method for Protein")
-    solubility_spec = st.text_input("Specification for Solubility")
-    solubility_result = st.text_input("Result for Solubility")
-    solubility_method = st.text_input("Method for Solubility")
-    oxalic_acid_spec = st.text_input("Specification for Limit of Oxalic Acid")
-    oxalic_acid_result = st.text_input("Result for Limit of Oxalic Acid")
-    oxalic_acid_method = st.text_input("Method for Limit of Oxalic Acid")
-    nacl_spec = st.text_input("Specification for Limit of NaCl")
-    nacl_result = st.text_input("Result for Limit of NaCl")
-    nacl_method = st.text_input("Method for Limit of NaCl")
-    sulphates_spec = st.text_input("Specification for Sulphates")
-    sulphates_result = st.text_input("Result for Sulphates")
-    sulphates_method = st.text_input("Method for Sulphates")
-    chloride_spec = st.text_input("Specification for Chloride")
-    chloride_result = st.text_input("Result for Chloride")
-    chloride_method = st.text_input("Method for Chloride")
+    
+    description_spec = st.text_input("Specification for Description", value="X with Characteristic taste and odour")
+    description_result = st.text_input("Result for Description", value="Compiles")
+    description_method = st.text_input("Method for Description", value="Physical")
+    
+    identification_spec = st.text_input("Specification for Identification", value="To comply by TLC")
+    identification_result = st.text_input("Result for Identification", value="Compiles")
+    identification_method = st.text_input("Method for Identification", value="TLC")
+
+    # Separate fields for Loss on Drying and Moisture
+    loss_on_drying_spec = st.text_input("Specification for Loss on Drying", value="Not more than X")
+    loss_on_drying_result = st.text_input("Result for Loss on Drying", value="X")
+    loss_on_drying_method = st.text_input("Method for Loss on Drying", value="USP<731>")
+
+    moisture_spec = st.text_input("Specification for Moisture", value="Not more than X")
+    moisture_result = st.text_input("Result for Moisture", value="X")
+    moisture_method = st.text_input("Method for Moisture", value="USP<921>")
+
+    particle_size_spec = st.text_input("Specification for Particle Size", value="X")
+    particle_size_result = st.text_input("Result for Particle Size", value="X")
+    particle_size_method = st.text_input("Method for Particle Size", value="USP<786>")
+    
+    ash_contents_spec = st.text_input("Specification for Ash Contents", value="Not more than X")
+    ash_contents_result = st.text_input("Result for Ash Contents", value="X")
+    ash_contents_method = st.text_input("Method for Ash Contents", value="USP<561>")
+    
+    residue_on_ignition_spec = st.text_input("Specification for Residue on Ignition", value="Not more than X")
+    residue_on_ignition_result = st.text_input("Result for Residue on Ignition", value="X")
+    residue_on_ignition_method = st.text_input("Method for Residue on Ignition", value="USP<281>")
+    
+    bulk_density_spec = st.text_input("Specification for Bulk Density", value="Between 0.3g/ml to 0.6g/ml")
+    bulk_density_result = st.text_input("Result for Bulk Density", value="X")
+    bulk_density_method = st.text_input("Method for Bulk Density", value="USP<616>")
+    
+    tapped_density_spec = st.text_input("Specification for Tapped Density", value="Between 0.4g/ml to 0.8g/ml")
+    tapped_density_result = st.text_input("Result for Tapped Density", value="X")
+    tapped_density_method = st.text_input("Method for Tapped Density", value="USP<616>")
+    
+    solubility_spec = st.text_input("Specification for Solubility", value="X")
+    solubility_result = st.text_input("Result for Solubility", value="X")
+    solubility_method = st.text_input("Method for Solubility", value="USP<1236>")
+    
+    ph_spec = st.text_input("Specification for pH", value="X")
+    ph_result = st.text_input("Result for pH", value="X")
+    ph_method = st.text_input("Method for pH", value="USP<791>")
+    
+    chlorides_nacl_spec = st.text_input("Specification for Chlorides of NaCl", value="X")
+    chlorides_nacl_result = st.text_input("Result for Chlorides of NaCl", value="X")
+    chlorides_nacl_method = st.text_input("Method for Chlorides of NaCl", value="USP<221>")
+    
+    sulphates_spec = st.text_input("Specification for Sulphates", value="X")
+    sulphates_result = st.text_input("Result for Sulphates", value="X")
+    sulphates_method = st.text_input("Method for Sulphates", value="USP<221>")
+    
+    fats_spec = st.text_input("Specification for Fats", value="X")
+    fats_result = st.text_input("Result for Fats", value="X")
+    fats_method = st.text_input("Method for Fats", value="USP<731>")
+    
+    protein_spec = st.text_input("Specification for Protein", value="X")
+    protein_result = st.text_input("Result for Protein", value="X")
+    protein_method = st.text_input("Method for Protein", value="Kjeldahl")
+    
+    total_ig_g_spec = st.text_input("Specification for Total IgG", value="X")
+    total_ig_g_result = st.text_input("Result for Total IgG", value="X")
+    total_ig_g_method = st.text_input("Method for Total IgG", value="HPLC")
+    
+    sodium_spec = st.text_input("Specification for Sodium", value="X")
+    sodium_result = st.text_input("Result for Sodium", value="X")
+    sodium_method = st.text_input("Method for Sodium", value="ICP-MS")
+    
+    gluten_spec = st.text_input("Specification for Gluten", value="NMT X")
+    gluten_result = st.text_input("Result for Gluten", value="X")
+    gluten_method = st.text_input("Method for Gluten", value="ELISA")
 
     st.subheader("Others")
-    heavy_metals_spec = st.text_input("Specification for Heavy Metals")
-    heavy_metals_result = st.text_input("Result for Heavy Metals")
-    heavy_metals_method = st.text_input("Method for Heavy Metals")
-    lead_spec = st.text_input("Specification for Lead")
-    lead_result = st.text_input("Result for Lead")
-    lead_method = st.text_input("Method for Lead")
-    cadmium_spec = st.text_input("Specification for Cadmium")
-    cadmium_result = st.text_input("Result for Cadmium")
-    cadmium_method = st.text_input("Method for Cadmium")
-    arsenic_spec = st.text_input("Specification for Arsenic")
-    arsenic_result = st.text_input("Result for Arsenic")
-    arsenic_method = st.text_input("Method for Arsenic")
-    mercury_spec = st.text_input("Specification for Mercury")
-    mercury_result = st.text_input("Result for Mercury")
-    mercury_method = st.text_input("Method for Mercury")
+    lead_spec = st.text_input("Specification for Lead", value="Not more than X ppm") 
+    lead_result = st.text_input("Result for Lead", value="X")
+    lead_method = st.text_input("Method for Lead", value="ICP-MS")
+    
+    cadmium_spec = st.text_input("Specification for Cadmium", value="Not more than X ppm")
+    cadmium_result = st.text_input("Result for Cadmium", value="X")
+    cadmium_method = st.text_input("Method for Cadmium", value="ICP-MS")
+    
+    arsenic_spec = st.text_input("Specification for Arsenic", value="Not more than X ppm")
+    arsenic_result = st.text_input("Result for Arsenic", value="X")
+    arsenic_method = st.text_input("Method for Arsenic", value="ICP-MS")
+    
+    mercury_spec = st.text_input("Specification for Mercury", value="Not more than X ppm")
+    mercury_result = st.text_input("Result for Mercury", value="X")
+    mercury_method = st.text_input("Method for Mercury", value="ICP-MS")
 
-    st.subheader("Chemicals")
-    assays_spec = st.text_input("Specification for Assays")
-    assays_result = st.text_input("Result for Assays")
-    assays_method = st.text_input("Method for Assays")
-    extraction_spec = st.text_input("Specification for Extraction Ratio")
-    extraction_result = st.text_input("Result for Extraction Ratio")
-    extraction_method = st.text_input("Method for Extraction Ratio")
+    st.subheader("Assays")
+    assays_spec = st.text_input("Specification for Assays", value="X")
+    assays_result = st.text_input("Result for Assays", value="X")
+    assays_method = st.text_input("Method for Assays", value="X")
 
     st.subheader("Pesticides")
-    pesticide_spec = st.text_input("Specification for Pesticide")
-    pesticide_result = st.text_input("Result for Pesticide")
-    pesticide_method = st.text_input("Method for Pesticide")
+    pesticide_spec = st.text_input("Specification for Pesticide", value="Meet USP<561>")
+    pesticide_result = st.text_input("Result for Pesticide", value="Compiles")
+    pesticide_method = st.text_input("Method for Pesticide", value="USP<561>")
+
+    st.subheader("Residual Solvent")
+    residual_solvent_spec = st.text_input("Specification for Residual Solvent", value="X")
+    residual_solvent_result = st.text_input("Result for Residual Solvent", value="Compiles")
+    residual_solvent_method = st.text_input("Method for Residual Solvent", value="X")
 
     st.subheader("Microbiological Profile")
-    total_plate_count_spec = st.text_input("Specification for Total Plate Count")
-    total_plate_count_result = st.text_input("Result for Total Plate Count")
-    total_plate_count_method = st.text_input("Method for Total Plate Count")
-    yeasts_mould_spec = st.text_input("Specification for Yeasts & Mould Count")
-    yeasts_mould_result = st.text_input("Result for Yeasts & Mould Count")
-    yeasts_mould_method = st.text_input("Method for Yeasts & Mould Count")
-    e_coli_spec = st.text_input("Specification for E.coli")
-    e_coli_result = st.text_input("Result for E.coli")
-    e_coli_method = st.text_input("Method for E.coli")
-    salmonella_spec = st.text_input("Specification for Salmonella")
-    salmonella_result = st.text_input("Result for Salmonella")
-    salmonella_method = st.text_input("Method for Salmonella")
-    coliforms_spec = st.text_input("Specification for Coliforms")
-    coliforms_result = st.text_input("Result for Coliforms")
-    coliforms_method = st.text_input("Method for Coliforms")
+    
+    total_plate_count_spec = st.text_input("Specification for Total Plate Count", value="Not more than X cfu/g")
+    total_plate_count_result = st.text_input("Result for Total Plate Count", value="X cfu/g")
+    total_plate_count_method = st.text_input("Method for Total Plate Count", value="USP<61>")
+    
+    yeasts_mould_spec = st.text_input("Specification for Yeasts & Mould Count", value="Not more than X cfu/g")
+    yeasts_mould_result = st.text_input("Result for Yeasts & Mould Count", value="X cfu/g")
+    yeasts_mould_method = st.text_input("Method for Yeasts & Mould Count", value="USP<61>")
+    
+    salmonella_spec = st.text_input("Specification for Salmonella", value="Absent/25g")
+    salmonella_result = st.text_input("Result for Salmonella", value="Absent")
+    salmonella_method = st.text_input("Method for Salmonella", value="USP<62>")
+    
+    e_coli_spec = st.text_input("Specification for Escherichia coli", value="Absent/10g")
+    e_coli_result = st.text_input("Result for Escherichia coli", value="Absent")
+    e_coli_method = st.text_input("Method for Escherichia coli", value="USP<62>")
+    
+    coliforms_spec = st.text_input("Specification for Coliforms", value="NMT X cfu/g")
+    coliforms_result = st.text_input("Result for Coliforms", value="X")
+    coliforms_method = st.text_input("Method for Coliforms", value="USP<62>")
 
     # Input for the name to save the PDF
     pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
@@ -366,22 +395,25 @@ if preview_button:
         "cas_no": cas_no,
         "product_code": product_code,
         "batch_no": batch_no,
-        "manufacturing_date": manufacturing_date,  # No conversion needed
-        "reanalysis_date": reanalysis_date,  # No conversion needed
+        "manufacturing_date": manufacturing_date,
+        "reanalysis_date": reanalysis_date,
         "quantity": quantity,
-        # "source": source,
         "origin": origin,
         "plant_part": plant_part,
         "extraction_ratio": extraction_ratio,
         "solvent": solvent,
 
+        "description_spec": description_spec,
+        "description_result": description_result,
+        "description_method": description_method,
+
         "identification_spec": identification_spec,
         "identification_result": identification_result,
         "identification_method": identification_method,
 
-        "description_spec": description_spec,
-        "description_result": description_result,
-        "description_method": description_method,
+        "loss_on_drying_spec": loss_on_drying_spec,
+        "loss_on_drying_result": loss_on_drying_result,
+        "loss_on_drying_method": loss_on_drying_method,
 
         "moisture_spec": moisture_spec,
         "moisture_result": moisture_result,
@@ -391,6 +423,14 @@ if preview_button:
         "particle_size_result": particle_size_result,
         "particle_size_method": particle_size_method,
 
+        "ash_contents_spec": ash_contents_spec,
+        "ash_contents_result": ash_contents_result,
+        "ash_contents_method": ash_contents_method,
+
+        "residue_on_ignition_spec": residue_on_ignition_spec,
+        "residue_on_ignition_result": residue_on_ignition_result,
+        "residue_on_ignition_method": residue_on_ignition_method,
+
         "bulk_density_spec": bulk_density_spec,
         "bulk_density_result": bulk_density_result,
         "bulk_density_method": bulk_density_method,
@@ -399,13 +439,21 @@ if preview_button:
         "tapped_density_result": tapped_density_result,
         "tapped_density_method": tapped_density_method,
 
-        "ash_contents_spec": ash_contents_spec,
-        "ash_contents_result": ash_contents_result,
-        "ash_contents_method": ash_contents_method,
+        "solubility_spec": solubility_spec,
+        "solubility_result": solubility_result,
+        "solubility_method": solubility_method,
 
         "ph_spec": ph_spec,
         "ph_result": ph_result,
         "ph_method": ph_method,
+
+        "chlorides_nacl_spec": chlorides_nacl_spec,
+        "chlorides_nacl_result": chlorides_nacl_result,
+        "chlorides_nacl_method": chlorides_nacl_method,
+
+        "sulphates_spec": sulphates_spec,
+        "sulphates_result": sulphates_result,
+        "sulphates_method": sulphates_method,
 
         "fats_spec": fats_spec,
         "fats_result": fats_result,
@@ -415,29 +463,17 @@ if preview_button:
         "protein_result": protein_result,
         "protein_method": protein_method,
 
-        "solubility_spec": solubility_spec,
-        "solubility_result": solubility_result,
-        "solubility_method": solubility_method,
+        "total_ig_g_spec": total_ig_g_spec,
+        "total_ig_g_result": total_ig_g_result,
+        "total_ig_g_method": total_ig_g_method,
 
-        "oxalic_acid_spec": oxalic_acid_spec,
-        "oxalic_acid_result": oxalic_acid_result,
-        "oxalic_acid_method": oxalic_acid_method,
+        "sodium_spec": sodium_spec,
+        "sodium_result": sodium_result,
+        "sodium_method": sodium_method,
 
-        "nacl_spec": nacl_spec,
-        "nacl_result": nacl_result,
-        "nacl_method": nacl_method,
-
-        "sulphates_spec": sulphates_spec,
-        "sulphates_result": sulphates_result,
-        "sulphates_method": sulphates_method,
-
-        "chloride_spec": chloride_spec,
-        "chloride_result": chloride_result,
-        "chloride_method": chloride_method,
-
-        "heavy_metals_spec": heavy_metals_spec,
-        "heavy_metals_result": heavy_metals_result,
-        "heavy_metals_method": heavy_metals_method,
+        "gluten_spec": gluten_spec,
+        "gluten_result": gluten_result,
+        "gluten_method": gluten_method,
 
         "lead_spec": lead_spec,
         "lead_result": lead_result,
@@ -459,13 +495,13 @@ if preview_button:
         "assays_result": assays_result,
         "assays_method": assays_method,
 
-        "extraction_spec": extraction_spec,
-        "extraction_result": extraction_result,
-        "extraction_method": extraction_method,
-
         "pesticide_spec": pesticide_spec,
         "pesticide_result": pesticide_result,
         "pesticide_method": pesticide_method,
+
+        "residual_solvent_spec": residual_solvent_spec,
+        "residual_solvent_result": residual_solvent_result,
+        "residual_solvent_method": residual_solvent_method,
 
         "total_plate_count_spec": total_plate_count_spec,
         "total_plate_count_result": total_plate_count_result,
@@ -475,13 +511,13 @@ if preview_button:
         "yeasts_mould_result": yeasts_mould_result,
         "yeasts_mould_method": yeasts_mould_method,
 
-        "e_coli_spec": e_coli_spec,
-        "e_coli_result": e_coli_result,
-        "e_coli_method": e_coli_method,
-
         "salmonella_spec": salmonella_spec,
         "salmonella_result": salmonella_result,
         "salmonella_method": salmonella_method,
+
+        "e_coli_spec": e_coli_spec,
+        "e_coli_result": e_coli_result,
+        "e_coli_method": e_coli_method,
 
         "coliforms_spec": coliforms_spec,
         "coliforms_result": coliforms_result,
@@ -497,7 +533,6 @@ if preview_button:
         with col2:
             for page in doc:
                 pix = page.get_pixmap()
-                # Adjust the width and height as needed
                 st.image(pix.tobytes(), caption=f"Page {page.number + 1}", width=900, use_column_width=False)
             st.success("Preview generated successfully!")
 
@@ -510,22 +545,25 @@ if download_button:
         "cas_no": cas_no,
         "product_code": product_code,
         "batch_no": batch_no,
-        "manufacturing_date": manufacturing_date,  # No conversion needed
-        "reanalysis_date": reanalysis_date,  # No conversion needed
+        "manufacturing_date": manufacturing_date,
+        "reanalysis_date": reanalysis_date,
         "quantity": quantity,
-        # "source": source,
         "origin": origin,
         "plant_part": plant_part,
         "extraction_ratio": extraction_ratio,
         "solvent": solvent,
 
+        "description_spec": description_spec,
+        "description_result": description_result,
+        "description_method": description_method,
+
         "identification_spec": identification_spec,
         "identification_result": identification_result,
         "identification_method": identification_method,
 
-        "description_spec": description_spec,
-        "description_result": description_result,
-        "description_method": description_method,
+        "loss_on_drying_spec": loss_on_drying_spec,
+        "loss_on_drying_result": loss_on_drying_result,
+        "loss_on_drying_method": loss_on_drying_method,
 
         "moisture_spec": moisture_spec,
         "moisture_result": moisture_result,
@@ -535,6 +573,14 @@ if download_button:
         "particle_size_result": particle_size_result,
         "particle_size_method": particle_size_method,
 
+        "ash_contents_spec": ash_contents_spec,
+        "ash_contents_result": ash_contents_result,
+        "ash_contents_method": ash_contents_method,
+
+        "residue_on_ignition_spec": residue_on_ignition_spec,
+        "residue_on_ignition_result": residue_on_ignition_result,
+        "residue_on_ignition_method": residue_on_ignition_method,
+
         "bulk_density_spec": bulk_density_spec,
         "bulk_density_result": bulk_density_result,
         "bulk_density_method": bulk_density_method,
@@ -543,13 +589,21 @@ if download_button:
         "tapped_density_result": tapped_density_result,
         "tapped_density_method": tapped_density_method,
 
-        "ash_contents_spec": ash_contents_spec,
-        "ash_contents_result": ash_contents_result,
-        "ash_contents_method": ash_contents_method,
+        "solubility_spec": solubility_spec,
+        "solubility_result": solubility_result,
+        "solubility_method": solubility_method,
 
         "ph_spec": ph_spec,
         "ph_result": ph_result,
         "ph_method": ph_method,
+
+        "chlorides_nacl_spec": chlorides_nacl_spec,
+        "chlorides_nacl_result": chlorides_nacl_result,
+        "chlorides_nacl_method": chlorides_nacl_method,
+
+        "sulphates_spec": sulphates_spec,
+        "sulphates_result": sulphates_result,
+        "sulphates_method": sulphates_method,
 
         "fats_spec": fats_spec,
         "fats_result": fats_result,
@@ -559,29 +613,17 @@ if download_button:
         "protein_result": protein_result,
         "protein_method": protein_method,
 
-        "solubility_spec": solubility_spec,
-        "solubility_result": solubility_result,
-        "solubility_method": solubility_method,
+        "total_ig_g_spec": total_ig_g_spec,
+        "total_ig_g_result": total_ig_g_result,
+        "total_ig_g_method": total_ig_g_method,
 
-        "oxalic_acid_spec": oxalic_acid_spec,
-        "oxalic_acid_result": oxalic_acid_result,
-        "oxalic_acid_method": oxalic_acid_method,
+        "sodium_spec": sodium_spec,
+        "sodium_result": sodium_result,
+        "sodium_method": sodium_method,
 
-        "nacl_spec": nacl_spec,
-        "nacl_result": nacl_result,
-        "nacl_method": nacl_method,
-
-        "sulphates_spec": sulphates_spec,
-        "sulphates_result": sulphates_result,
-        "sulphates_method": sulphates_method,
-
-        "chloride_spec": chloride_spec,
-        "chloride_result": chloride_result,
-        "chloride_method": chloride_method,
-
-        "heavy_metals_spec": heavy_metals_spec,
-        "heavy_metals_result": heavy_metals_result,
-        "heavy_metals_method": heavy_metals_method,
+        "gluten_spec": gluten_spec,
+        "gluten_result": gluten_result,
+        "gluten_method": gluten_method,
 
         "lead_spec": lead_spec,
         "lead_result": lead_result,
@@ -603,13 +645,13 @@ if download_button:
         "assays_result": assays_result,
         "assays_method": assays_method,
 
-        "extraction_spec": extraction_spec,
-        "extraction_result": extraction_result,
-        "extraction_method": extraction_method,
-
         "pesticide_spec": pesticide_spec,
         "pesticide_result": pesticide_result,
         "pesticide_method": pesticide_method,
+
+        "residual_solvent_spec": residual_solvent_spec,
+        "residual_solvent_result": residual_solvent_result,
+        "residual_solvent_method": residual_solvent_method,
 
         "total_plate_count_spec": total_plate_count_spec,
         "total_plate_count_result": total_plate_count_result,
@@ -619,13 +661,13 @@ if download_button:
         "yeasts_mould_result": yeasts_mould_result,
         "yeasts_mould_method": yeasts_mould_method,
 
-        "e_coli_spec": e_coli_spec,
-        "e_coli_result": e_coli_result,
-        "e_coli_method": e_coli_method,
-
         "salmonella_spec": salmonella_spec,
         "salmonella_result": salmonella_result,
         "salmonella_method": salmonella_method,
+
+        "e_coli_spec": e_coli_spec,
+        "e_coli_result": e_coli_result,
+        "e_coli_method": e_coli_method,
 
         "coliforms_spec": coliforms_spec,
         "coliforms_result": coliforms_result,
