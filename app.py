@@ -532,10 +532,10 @@ if preview_button:
         doc = fitz.open(stream=pdf_buffer, filetype="pdf")
         # Display each page as an image in the right column
         with col2:
-            st.title("Preview Sectio")
+            st.title("Preview Section")
             for page in doc:
                 pix = page.get_pixmap()
-                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_column_width=True)
+                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_container_width =True)
             st.success("Preview generated successfully!")
 
 # Handle PDF download
