@@ -3,7 +3,7 @@ from typing import Container
 import streamlit as st
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import io
 import fitz  # PyMuPDF
@@ -21,14 +21,34 @@ theme = config.get('settings', 'theme', fallback='default')
 # Use the configuration values in your app
 st.set_page_config(page_title="Tru Herb COA PDF Generator", layout="wide")
 
+# Function to draw header and footer
+def header_footer(canvas, doc):
+    # Save current state of canvas
+    canvas.saveState()
+
+    # Paths for logo and footer
+    logo_path = os.path.join(os.getcwd(), "images", "tru_herb_logo.png")
+    footer_path = os.path.join(os.getcwd(), "images", "footer.png")
+
+    # Draw logo as header
+    if os.path.exists(logo_path):
+        canvas.drawImage(logo_path, x=250, y=A4[1] - 65, width=100, height=50)
+
+    # Draw footer image
+    if os.path.exists(footer_path):
+        canvas.drawImage(footer_path, x=50, y=20, width=500, height=70)
+
+    # Restore the state of canvas
+    canvas.restoreState()
+
 # Function to generate the PDF based on COA structure
 def generate_pdf(data):
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=10, bottomMargin=10)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=60, bottomMargin=80)
 
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('title_style', fontSize=13, spaceAfter=1, alignment=1, fontName='Times-Bold')
+    title_style = ParagraphStyle('title_style', fontSize=12, spaceAfter=1, alignment=1, fontName='Times-Bold')
     title_style1 = ParagraphStyle('title_style1', fontSize=10, spaceAfter=0, alignment=1, fontName='Times-Bold')
     normal_style = styles['BodyText']
     normal_style.fontName = 'Times-Roman'  # Use Times New Roman for normal text
@@ -36,17 +56,17 @@ def generate_pdf(data):
 
     elements = []
 
-    # Set paths for images
-    logo_path = os.path.join(os.getcwd(), "images", "tru_herb_logo.png")
-    footer_path = os.path.join(os.getcwd(), "images", "footer.png")
+    # # Set paths for images
+    # logo_path = os.path.join(os.getcwd(), "images", "tru_herb_logo.png")
+    # footer_path = os.path.join(os.getcwd(), "images", "footer.png")
 
-    # Check if images exist
-    if not os.path.exists(logo_path) or not os.path.exists(footer_path):
-        st.error("One or more images are missing.")
-        return None
+    # # Check if images exist
+    # if not os.path.exists(logo_path) or not os.path.exists(footer_path):
+    #     st.error("One or more images are missing.")
+    #     return None
 
     # Add logo and title at the top
-    elements.append(Image(logo_path, width=100, height=40))
+    # elements.append(Image(logo_path, width=100, height=40))
     elements.append(Spacer(1, 3))
     elements.append(Paragraph("CERTIFICATE OF ANALYSIS", title_style))
     elements.append(Paragraph(data.get('product_name', ''), title_style))  # Add product name
@@ -165,10 +185,10 @@ def generate_pdf(data):
     num_columns = len(spec_data[0]) if spec_data else 4  # Get number of columns from data, default to 4
     # Calculate widths - first column slightly smaller, second slightly larger, rest equal
     col_widths = [
-        total_width * 0.24,  # 24% for first column
-        total_width * 0.28,  # 28% for second column
-        total_width * 0.24,  # 24% for third column
-        total_width * 0.24   # 24% for fourth column
+        total_width * 0.23,  # 24% for first column
+        total_width * 0.39,  # 28% for second column
+        total_width * 0.18,  # 24% for third column
+        total_width * 0.20   # 24% for fourth column
     ]
     spec_table = Table(spec_data, colWidths=col_widths)
     spec_table.setStyle(TableStyle([
@@ -219,10 +239,10 @@ def generate_pdf(data):
     elements.append(Spacer(1, 3))  # Only one spacer as requested
 
     # Footer Image
-    elements.append(Image(footer_path, width=500, height=80))
+    # elements.append(Image(footer_path, width=500, height=80))
 
     # Build PDF
-    doc.build(elements)
+    doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
     buffer.seek(0)
     return buffer
 
