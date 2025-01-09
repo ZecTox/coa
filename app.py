@@ -28,10 +28,11 @@ def generate_pdf(data):
 
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('title_style', fontSize=13, spaceAfter=1, alignment=1, fontName='Helvetica-Bold')
-    title_style1 = ParagraphStyle('title_style1', fontSize=10, spaceAfter=0, alignment=1, fontName='Helvetica-Bold')
+    title_style = ParagraphStyle('title_style', fontSize=13, spaceAfter=1, alignment=1, fontName='Times-Bold')
+    title_style1 = ParagraphStyle('title_style1', fontSize=10, spaceAfter=0, alignment=1, fontName='Times-Bold')
     normal_style = styles['BodyText']
-    normal_style.alignment = 1  # Center alignment for paragraphs
+    normal_style.fontName = 'Times-Roman'  # Use Times New Roman for normal text
+    normal_style.alignment = 0  # Left alignment for paragraphs
 
     elements = []
 
@@ -58,7 +59,7 @@ def generate_pdf(data):
         ["Batch No.", Paragraph(data.get('batch_no', ''), normal_style)],
         ["Date of Manufacturing", Paragraph(data.get('manufacturing_date', ''), normal_style)],
         ["Date of Reanalysis", Paragraph(data.get('reanalysis_date', ''), normal_style)],
-        ["Botanical Name", Paragraph(data.get('botanical_name', ''), normal_style)],
+        ["Botanical Name", Paragraph(f"<i>{data.get('botanical_name', '')}</i>", normal_style)],  # Italicize botanical name
         ["Extraction Ratio", Paragraph(data.get('extraction_ratio', ''), normal_style)],
         ["Extraction Solvents", Paragraph(data.get('solvent', ''), normal_style)],
         ["Plant Parts", Paragraph(data.get('plant_part', ''), normal_style)],
@@ -75,8 +76,8 @@ def generate_pdf(data):
         product_table = Table(product_info, colWidths=[140, 360])
         product_table.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),  # Use Times New Roman for table text
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Ensure all text is left-aligned
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligned
             ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
         ]))
@@ -180,7 +181,7 @@ def generate_pdf(data):
         ('SPAN', (0, len(spec_data)-2), (-1, len(spec_data)-2)),  # Span the remarks row
         ('SPAN', (0, len(spec_data)-1), (-1, len(spec_data)-1)),  # Span the final remark row
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),  # Use Times New Roman for table text
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ensure text is top-aligned
         ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),  # Enable word wrapping
