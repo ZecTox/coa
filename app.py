@@ -194,7 +194,7 @@ def generate_pdf(data):
 
     # Declaration Table
     declaration_data = [
-        ["GMO Status:", Paragraph("Free from GMO", normal_style), "", "Allergen statement:", Paragraph("Free from allergen", normal_style)],
+        ["GMO Status:", Paragraph("Free from GMO", normal_style), "", "Allergen statement:", Paragraph(f"{allergen_statement}", normal_style)],
         ["Irradiation status:", Paragraph("Non – Irradiated", normal_style), "", "Storage condition:", Paragraph("At room temperature", normal_style)],
         ["Prepared by", Paragraph("Executive – QC", normal_style), "", "Approved by", Paragraph("Head-QC/QA", normal_style)]
     ]
@@ -379,6 +379,14 @@ with col1.form("coa_form"):
     coliforms_spec = st.text_input("Specification for Coliforms", value="NMT X cfu/g")
     coliforms_result = st.text_input("Result for Coliforms", value="X")
     coliforms_method = st.text_input("Method for Coliforms", value="USP<62>")
+    
+    
+    st.subheader("Declaration - Allergen Statement")
+    # Allergen statement option
+    allergen_statement = st.selectbox(
+        "Allergen Statement",
+        options=["Free from allergen", "Contains Allergen"]
+    )
 
     # Input for the name to save the PDF
     # pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
