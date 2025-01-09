@@ -383,10 +383,7 @@ with col1.form("coa_form"):
     
     st.subheader("Declaration - Allergen Statement")
     # Allergen statement option
-    allergen_statement = st.selectbox(
-        "Allergen Statement",
-        options=["Free from allergen", "Contains Allergen"]
-    )
+    allergen_statement = st.selectbox("Allergen Statement", options=["Free from allergen", "Contains Allergen"])
 
     # Input for the name to save the PDF
     # pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
