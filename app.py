@@ -381,13 +381,13 @@ with col1.form("coa_form"):
     coliforms_method = st.text_input("Method for Coliforms", value="USP<62>")
 
     # Input for the name to save the PDF
-    pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
+    # pdf_filename = st.text_input("Enter the filename for the PDF (without extension):", "COA")
 
     # Preview button
     preview_button = st.form_submit_button("Preview")
 
     # Generate and download button
-    download_button = st.form_submit_button("Download PDF")
+    download_button = st.form_submit_button("Compile and Generate PDF")
 
 # Handle preview in the right column
 if preview_button:
@@ -536,7 +536,7 @@ if preview_button:
         with col2:
             for page in doc:
                 pix = page.get_pixmap()
-                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_column_width=True) 
+                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_container_width=True) 
             st.success("Preview generated successfully!")
 
 # Handle PDF download
@@ -684,7 +684,7 @@ if download_button:
         st.download_button(
             label="Download COA PDF",
             data=pdf_buffer,
-            file_name=f"{pdf_filename}.pdf",
+            file_name= product_name + ".pdf", # f"{pdf_filename}.pdf", changed to product_name n
             mime="application/pdf"
         )
 
