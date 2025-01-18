@@ -12,6 +12,9 @@ import io
 import fitz  # PyMuPDF
 import configparser
 
+# PIL used for combining pages into a single image
+from PIL import Image
+
 # Initialize the configparser
 config = configparser.ConfigParser()
 config.read('.streamlit/config.toml')
@@ -19,6 +22,9 @@ theme = config.get('settings', 'theme', fallback='default')
 
 st.set_page_config(page_title="Tru Herb COA PDF Generator", layout="wide")
 
+#####################################
+# Page Header/Footer in PDF
+#####################################
 def header_footer(canvas, doc):
     canvas.saveState()
     logo_path = os.path.join(os.getcwd(), "images", "tru_herb_logo.png")
@@ -30,7 +36,14 @@ def header_footer(canvas, doc):
         canvas.drawImage(footer_path, x=50, y=20, width=500, height=70)
     canvas.restoreState()
 
+#####################################
+# Main PDF Generation
+#####################################
 def generate_pdf(data):
+    """
+    Builds the PDF using ReportLab. If the PDF ends up with multiple pages,
+    we combine them into a single, scaled page.
+    """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=60, bottomMargin=80)
     styles = getSampleStyleSheet()
@@ -50,7 +63,6 @@ def generate_pdf(data):
 
     # ----------------------------------------------------------------
     # Build Product Info table, skipping truly empty fields
-    # (Especially for "Botanical Name", so it won't appear if blank.)
     # ----------------------------------------------------------------
     product_info = []
 
@@ -78,7 +90,6 @@ def generate_pdf(data):
     maybe_add_product_row("Country of Origin", data.get('origin', ''))
 
     if product_info:
-        # Insert a header row for consistent style
         product_info.insert(0, ["Parameter", "Value"])
         product_table = Table(product_info, colWidths=[140, 360])
         product_table.setStyle(TableStyle([
@@ -93,16 +104,14 @@ def generate_pdf(data):
         elements.append(Spacer(1, 0))
 
     # ----------------------------------------------------------------
-    # Build the SPECIFICATIONS table dynamically
+    # Prepare the SPECIFICATIONS table data
     # ----------------------------------------------------------------
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
-    spec_data = [spec_headers]  # The first row is always the table header
+    spec_data = [spec_headers]  # The first row is the table header
 
-    # We will keep track of heading-row indices so we can do the spanned cells
-    heading_rows = []  # list of integer row indices where we add a heading
-    current_row_index = 1  # we start adding data at row=1, since row=0 is spec_headers
+    heading_indices = []
 
-    # Define sections in a dict, just like your code
+    # Define the sections dictionary
     sections = {
         "Physical": [
             ("Description", data['description_spec'], data['description_result'], data['description_method']) 
@@ -178,18 +187,43 @@ def generate_pdf(data):
         ]
     }
 
-    # A list of (row_index_for_section_heading) we will apply SPAN to
-    heading_indices = []
+    # Append dynamic rows from session_state data
+    if "physical_dynamic_rows" in data:
+        for row in data["physical_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Physical"].append((row["parameter"], row["spec"], row["result"], row["method"]))
 
-    # For each section, if there are any rows, add a heading row and add the data rows
+    if "others_dynamic_rows" in data:
+        for row in data["others_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Others"].append((row["parameter"], row["spec"], row["result"], row["method"]))
+
+    if "assays_dynamic_rows" in data:
+        for row in data["assays_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Assays"].append((row["parameter"], row["spec"], row["result"], row["method"]))
+
+    if "pesticides_dynamic_rows" in data:
+        for row in data["pesticides_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Pesticides"].append((row["parameter"], row["spec"], row["result"], row["method"]))
+
+    if "residual_solvent_dynamic_rows" in data:
+        for row in data["residual_solvent_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Residual Solvent"].append((row["parameter"], row["spec"], row["result"], row["method"]))
+
+    if "microbio_dynamic_rows" in data:
+        for row in data["microbio_dynamic_rows"]:
+            if row["parameter"] and row["spec"] and row["result"] and row["method"]:
+                sections["Microbiological Profile"].append((row["parameter"], row["spec"], row["result"], row["method"]))
+
+    # Add each section to spec_data
     for section_name, rows in sections.items():
         filtered_rows = [r for r in rows if r]
         if filtered_rows:
-            # Append a heading row for this section
             spec_data.append([Paragraph(f"<b>{section_name}</b>", style_for_sections), "", "", ""])
-            heading_indices.append(len(spec_data) - 1)  # record the row index we just appended
-
-            # Append each parameter row
+            heading_indices.append(len(spec_data) - 1)
             for param_tuple in filtered_rows:
                 row_cells = [Paragraph(str(cell), normal_style) for cell in param_tuple]
                 spec_data.append(row_cells)
@@ -205,12 +239,9 @@ def generate_pdf(data):
                       "", "", ""])
     final_remark_row = len(spec_data) - 1
 
-    # Build the Table
     total_width = 500
     col_widths = [total_width * 0.23, total_width * 0.39, total_width * 0.18, total_width * 0.20]
     spec_table = Table(spec_data, colWidths=col_widths)
-
-    # Build the table style, do normal grid
     spec_table_style = [
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -219,16 +250,12 @@ def generate_pdf(data):
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),
     ]
-
-    # Now for each heading row index, we span all 4 columns in that row
     for heading_row in heading_indices:
         spec_table_style.append(('SPAN', (0, heading_row), (-1, heading_row)))
-
-    # Also span the remarks rows
     spec_table_style.append(('SPAN', (0, last_remarks_row), (-1, last_remarks_row)))
     spec_table_style.append(('SPAN', (0, final_remark_row), (-1, final_remark_row)))
-
     spec_table.setStyle(TableStyle(spec_table_style))
+
     elements.append(spec_table)
     elements.append(Spacer(1, 2))
 
@@ -273,16 +300,109 @@ def generate_pdf(data):
     elements.append(declaration_table)
     elements.append(Spacer(1, 3))
 
-    # Build final PDF
+    # Build normal multi-page PDF
     doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
     buffer.seek(0)
+
+    # ----------------------------------------------------------------
+    # Force single page if there's more than 1 page
+    # ----------------------------------------------------------------
+    pdf_in = fitz.open(stream=buffer.getvalue(), filetype="pdf")
+    if len(pdf_in) > 1:
+        # Combine all pages into a single tall image, then scale to A4
+        images = []
+        for page_index in range(len(pdf_in)):
+            # Increase dpi for better resolution if desired
+            pix = pdf_in[page_index].get_pixmap(dpi=144)
+            # Convert PyMuPDF Pixmap to PIL Image
+            img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+            images.append(img)
+
+        # Stack vertically
+        total_height = sum(im.height for im in images)
+        max_width = max(im.width for im in images)
+        combined_img = Image.new("RGBA", (max_width, total_height), (255, 255, 255, 0))
+        current_y = 0
+        for im in images:
+            combined_img.paste(im, (0, current_y))
+            current_y += im.height
+
+        # Now scale to fit standard A4 (595 x 842 points)
+        target_w, target_h = 595, 842
+        scale_factor = min(target_w / combined_img.width, target_h / combined_img.height)
+        new_w = int(combined_img.width * scale_factor)
+        new_h = int(combined_img.height * scale_factor)
+        combined_img = combined_img.resize((new_w, new_h), Image.LANCZOS)
+
+        # Create a new single-page PDF
+        new_pdf = fitz.open()
+        page = new_pdf.new_page(width=595, height=842)
+        # Convert the combined_img back into bytes
+        img_bytes = io.BytesIO()
+        combined_img.save(img_bytes, format="PNG")
+        img_bytes.seek(0)
+        rect = fitz.Rect(0, 0, new_w, new_h)
+        page.insert_image(rect, stream=img_bytes.getvalue())
+        final_buffer = io.BytesIO(new_pdf.tobytes())
+        return final_buffer
+
+    # If only 1 page, return as-is
     return buffer
 
-# ----------------------------------------------------------------------------
-# STREAMLIT UI
-# ----------------------------------------------------------------------------
+
+##############################################
+# STREAMLIT APP
+##############################################
+
+# Initialize session_state lists for dynamic rows
+if "physical_rows" not in st.session_state:
+    st.session_state["physical_rows"] = []
+if "others_rows" not in st.session_state:
+    st.session_state["others_rows"] = []
+if "assays_rows" not in st.session_state:
+    st.session_state["assays_rows"] = []
+if "pesticides_rows" not in st.session_state:
+    st.session_state["pesticides_rows"] = []
+if "residual_solvent_rows" not in st.session_state:
+    st.session_state["residual_solvent_rows"] = []
+if "microbio_rows" not in st.session_state:
+    st.session_state["microbio_rows"] = []
+
 col1, col2 = st.columns(2)
 
+##############################################
+# BUTTONS TO ADD DYNAMIC ROWS (OUTSIDE FORM)
+##############################################
+
+st.markdown("### Add More Rows (outside the main form)")
+
+# Physical
+if st.button("Add new Physical Row"):
+    st.session_state["physical_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+# Others
+if st.button("Add new Others Row"):
+    st.session_state["others_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+# Assays
+if st.button("Add new Assays Row"):
+    st.session_state["assays_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+# Pesticides
+if st.button("Add new Pesticides Row"):
+    st.session_state["pesticides_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+# Residual Solvent
+if st.button("Add new Residual Solvent Row"):
+    st.session_state["residual_solvent_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+# Microbiological
+if st.button("Add new Microbiological Row"):
+    st.session_state["microbio_rows"].append({"parameter": "", "spec": "", "result": "", "method": ""})
+
+##############################################
+# MAIN FORM
+##############################################
 with col1.form("coa_form"):
     st.title("Tru Herb COA PDF Generator")
     st.header("Product Information")
@@ -316,7 +436,8 @@ with col1.form("coa_form"):
 
     st.header("Specifications")
     st.subheader("Physical")
-    # 3-col per row: (Specification, Result, Method)
+
+    # Existing Physical fields
     phys_1col1, phys_1col2, phys_1col3 = st.columns(3)
     description_spec = phys_1col1.text_input("Spec for Description", value="X with Characteristic taste and odour")
     description_result = phys_1col2.text_input("Result for Description", value="Compiles")
@@ -407,6 +528,18 @@ with col1.form("coa_form"):
     gluten_result = phys_18col2.text_input("Result for Gluten", placeholder="X")
     gluten_method = phys_18col3.text_input("Method for Gluten", value="ELISA")
 
+    # Additional Physical Rows (display only)
+    st.markdown("#### Additional Physical Rows")
+    for i, row in enumerate(st.session_state["physical_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Physical Param {i+1}", value=row["parameter"], key=f"phys_param_{i}")
+        row["spec"] = c2.text_input(f"Physical Spec {i+1}", value=row["spec"], key=f"phys_spec_{i}")
+        row["result"] = c3.text_input(f"Physical Result {i+1}", value=row["result"], key=f"phys_result_{i}")
+        row["method"] = c4.text_input(f"Physical Method {i+1}", value=row["method"], key=f"phys_method_{i}")
+
+    # -----------------------------
+    # Others
+    # -----------------------------
     st.subheader("Others")
     others_1col1, others_1col2, others_1col3 = st.columns(3)
     lead_spec = others_1col1.text_input("Spec for Lead", value="Not more than X ppm")
@@ -428,24 +561,68 @@ with col1.form("coa_form"):
     mercury_result = others_4col2.text_input("Result for Mercury", placeholder="X")
     mercury_method = others_4col3.text_input("Method for Mercury", value="ICP-MS")
 
+    st.markdown("#### Additional Others Rows")
+    for i, row in enumerate(st.session_state["others_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Others Param {i+1}", value=row["parameter"], key=f"others_param_{i}")
+        row["spec"] = c2.text_input(f"Others Spec {i+1}", value=row["spec"], key=f"others_spec_{i}")
+        row["result"] = c3.text_input(f"Others Result {i+1}", value=row["result"], key=f"others_result_{i}")
+        row["method"] = c4.text_input(f"Others Method {i+1}", value=row["method"], key=f"others_method_{i}")
+
+    # -----------------------------
+    # Assays
+    # -----------------------------
     st.subheader("Assays")
     assays_col1, assays_col2, assays_col3 = st.columns(3)
     assays_spec = assays_col1.text_input("Specification for Assays", placeholder="X")
     assays_result = assays_col2.text_input("Result for Assays", placeholder="X")
     assays_method = assays_col3.text_input("Method for Assays", placeholder="X")
 
+    st.markdown("#### Additional Assays Rows")
+    for i, row in enumerate(st.session_state["assays_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Assays Param {i+1}", value=row["parameter"], key=f"assays_param_{i}")
+        row["spec"] = c2.text_input(f"Assays Spec {i+1}", value=row["spec"], key=f"assays_spec_{i}")
+        row["result"] = c3.text_input(f"Assays Result {i+1}", value=row["result"], key=f"assays_result_{i}")
+        row["method"] = c4.text_input(f"Assays Method {i+1}", value=row["method"], key=f"assays_method_{i}")
+
+    # -----------------------------
+    # Pesticides
+    # -----------------------------
     st.subheader("Pesticides")
     pest_col1, pest_col2, pest_col3 = st.columns(3)
     pesticide_spec = pest_col1.text_input("Specification for Pesticide", value="Meet USP<561>")
     pesticide_result = pest_col2.text_input("Result for Pesticide", value="Compiles")
     pesticide_method = pest_col3.text_input("Method for Pesticide", value="USP<561>")
 
+    st.markdown("#### Additional Pesticides Rows")
+    for i, row in enumerate(st.session_state["pesticides_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Pesticides Param {i+1}", value=row["parameter"], key=f"pest_param_{i}")
+        row["spec"] = c2.text_input(f"Pesticides Spec {i+1}", value=row["spec"], key=f"pest_spec_{i}")
+        row["result"] = c3.text_input(f"Pesticides Result {i+1}", value=row["result"], key=f"pest_result_{i}")
+        row["method"] = c4.text_input(f"Pesticides Method {i+1}", value=row["method"], key=f"pest_method_{i}")
+
+    # -----------------------------
+    # Residual Solvent
+    # -----------------------------
     st.subheader("Residual Solvent")
     rs_col1, rs_col2, rs_col3 = st.columns(3)
     residual_solvent_spec = rs_col1.text_input("Specification for Residual Solvent", placeholder="X")
     residual_solvent_result = rs_col2.text_input("Result for Residual Solvent", value="Compiles")
     residual_solvent_method = rs_col3.text_input("Method for Residual Solvent", placeholder="X")
 
+    st.markdown("#### Additional Residual Solvent Rows")
+    for i, row in enumerate(st.session_state["residual_solvent_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Residual Param {i+1}", value=row["parameter"], key=f"resid_param_{i}")
+        row["spec"] = c2.text_input(f"Residual Spec {i+1}", value=row["spec"], key=f"resid_spec_{i}")
+        row["result"] = c3.text_input(f"Residual Result {i+1}", value=row["result"], key=f"resid_result_{i}")
+        row["method"] = c4.text_input(f"Residual Method {i+1}", value=row["method"], key=f"resid_method_{i}")
+
+    # -----------------------------
+    # Microbiological Profile
+    # -----------------------------
     st.subheader("Microbiological Profile")
     micro_1col1, micro_1col2, micro_1col3 = st.columns(3)
     total_plate_count_spec = micro_1col1.text_input("Spec for Total Plate Count", value="Not more than X cfu/g")
@@ -472,13 +649,25 @@ with col1.form("coa_form"):
     coliforms_result = micro_5col2.text_input("Result for Coliforms", placeholder="X")
     coliforms_method = micro_5col3.text_input("Method for Coliforms", value="USP<62>")
 
+    st.markdown("#### Additional Microbiological Rows")
+    for i, row in enumerate(st.session_state["microbio_rows"]):
+        c1, c2, c3, c4 = st.columns(4)
+        row["parameter"] = c1.text_input(f"Microbio Param {i+1}", value=row["parameter"], key=f"microbio_param_{i}")
+        row["spec"] = c2.text_input(f"Microbio Spec {i+1}", value=row["spec"], key=f"microbio_spec_{i}")
+        row["result"] = c3.text_input(f"Microbio Result {i+1}", value=row["result"], key=f"microbio_result_{i}")
+        row["method"] = c4.text_input(f"Microbio Method {i+1}", value=row["method"], key=f"microbio_method_{i}")
+
     st.subheader("Declaration - Allergen Statement")
     allergen_statement = st.selectbox("Allergen Statement", options=["Free from allergen", "Contains Allergen"])
 
+    # Two submit buttons inside the form
     preview_button = st.form_submit_button("Preview")
     download_button = st.form_submit_button("Compile and Generate PDF")
 
-# Handle preview in the right column
+
+######################
+# Handle Preview
+######################
 if preview_button:
     data = {
         "product_name": product_name,
@@ -585,8 +774,15 @@ if preview_button:
         "coliforms_spec": coliforms_spec,
         "coliforms_result": coliforms_result,
         "coliforms_method": coliforms_method,
-
         "allergen_statement": allergen_statement,
+
+        # add dynamic rows
+        "physical_dynamic_rows": st.session_state["physical_rows"],
+        "others_dynamic_rows": st.session_state["others_rows"],
+        "assays_dynamic_rows": st.session_state["assays_rows"],
+        "pesticides_dynamic_rows": st.session_state["pesticides_rows"],
+        "residual_solvent_dynamic_rows": st.session_state["residual_solvent_rows"],
+        "microbio_dynamic_rows": st.session_state["microbio_rows"],
     }
 
     pdf_buffer = generate_pdf(data)
@@ -599,11 +795,11 @@ if preview_button:
         with col1:
             st.success("Preview generated successfully!")
 
-
-# Handle PDF Download
+######################
+# Handle Download
+######################
 if download_button:
     data = {
-        # exactly the same dictionary as above...
         "product_name": product_name,
         "botanical_name": botanical_name,
         "chemical_name": chemical_name,
@@ -708,6 +904,13 @@ if download_button:
         "coliforms_result": coliforms_result,
         "coliforms_method": coliforms_method,
         "allergen_statement": allergen_statement,
+
+        "physical_dynamic_rows": st.session_state["physical_rows"],
+        "others_dynamic_rows": st.session_state["others_rows"],
+        "assays_dynamic_rows": st.session_state["assays_rows"],
+        "pesticides_dynamic_rows": st.session_state["pesticides_rows"],
+        "residual_solvent_dynamic_rows": st.session_state["residual_solvent_rows"],
+        "microbio_dynamic_rows": st.session_state["microbio_rows"],
     }
 
     pdf_buffer = generate_pdf(data)
