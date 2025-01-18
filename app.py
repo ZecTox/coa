@@ -115,7 +115,7 @@ def generate_pdf(data):
         elements.append(Spacer(1, 0))
 
     # ----------------------------------------------------------------
-    # SPECIFICATIONS
+    # SPECIFICATIONS TABLE
     # ----------------------------------------------------------------
     spec_headers = ["Parameter", "Specification", "Result", "Method"]
     spec_data = [spec_headers]
@@ -209,6 +209,7 @@ def generate_pdf(data):
         "Microbiological Profile": combine_section("microbio_extra_rows", microbio_base),
     }
 
+    # Build the table data
     for section_name, rows in sections.items():
         if rows:
             spec_data.append([Paragraph(f"<b>{section_name}</b>", style_for_sections), "", "", ""])
@@ -217,6 +218,7 @@ def generate_pdf(data):
                 row_cells = [Paragraph(str(cell), normal_style) for cell in param_tuple]
                 spec_data.append(row_cells)
 
+    # Remarks
     remarks_text = ("Since the product is derived from natural origin, there is likely to be minor color "
                     "variation because of the geographical and seasonal variations of the raw material")
     end_text = "REMARKS: COMPLIES WITH IN HOUSE SPECIFICATIONS"
@@ -227,8 +229,12 @@ def generate_pdf(data):
                       "", "", ""])
     final_remark_row = len(spec_data) - 1
 
+    # Build table
     total_width = 500
-    col_widths = [total_width * 0.23, total_width * 0.39, total_width * 0.18, total_width * 0.20]
+    col_widths = [total_width * 0.23, 
+                  total_width * 0.39, 
+                  total_width * 0.18, 
+                  total_width * 0.20]
     spec_table = Table(spec_data, colWidths=col_widths)
 
     spec_table_style = [
@@ -239,7 +245,6 @@ def generate_pdf(data):
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),
     ]
-
     for heading_row in heading_rows:
         spec_table_style.append(('SPAN', (0, heading_row), (-1, heading_row)))
     spec_table_style.append(('SPAN', (0, last_remarks_row), (-1, last_remarks_row)))
@@ -290,9 +295,7 @@ def generate_pdf(data):
     elements.append(declaration_table)
     elements.append(Spacer(1, 3))
 
-    # -------------------------------------------------
-    # Force single page using KeepInFrame with mode=shrink
-    # -------------------------------------------------
+    # Force single page
     kiframe = KeepInFrame(
         maxWidth=A4[0] - doc.leftMargin - doc.rightMargin,
         maxHeight=A4[1] - doc.topMargin - doc.bottomMargin,
@@ -308,9 +311,9 @@ def generate_pdf(data):
 # ----------------------------------------------------------------------------
 # STREAMLIT UI
 # ----------------------------------------------------------------------------
-col1, col2 = st.columns(2)
 
-with col1.form("coa_form"):
+col1, col2 = st.columns(2)
+with col1:
     st.title("Tru Herb COA PDF Generator")
     st.header("Product Information")
 
@@ -341,7 +344,10 @@ with col1.form("coa_form"):
 
     origin = st.text_input("Country of Origin", value="India")
 
+    # ---------- SPECIFICATIONS -----------
     st.header("Specifications")
+
+    # Physical
     st.subheader("Physical")
     phys_1col1, phys_1col2, phys_1col3 = st.columns(3)
     description_spec = phys_1col1.text_input("Spec for Description", value="X with Characteristic taste and odour")
@@ -435,7 +441,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Physical Rows")
     for i, row_data in enumerate(st.session_state["Physical_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["Physical_rows"][i]["param"] = c1.text_input(
             f"Physical Parameter {i+1}", row_data["param"], key=f"PhysicalParam_{i}"
         )
@@ -448,12 +454,15 @@ with col1.form("coa_form"):
         st.session_state["Physical_rows"][i]["method"] = c4.text_input(
             f"Physical Method {i+1}", row_data["method"], key=f"PhysicalMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_physical_{i}"):
+            st.session_state["Physical_rows"].pop(i)
+            st.rerun()
 
-    # Adding st.rerun() so the new row appears immediately
-    if st.form_submit_button("Add New Physical Row"):
+    if st.button("Add New Physical Row"):
         st.session_state["Physical_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # OTHERS
     st.subheader("Others")
     others_1col1, others_1col2, others_1col3 = st.columns(3)
     lead_spec = others_1col1.text_input("Spec for Lead", value="Not more than X ppm")
@@ -477,7 +486,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Others Rows")
     for i, row_data in enumerate(st.session_state["Others_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["Others_rows"][i]["param"] = c1.text_input(
             f"Others Parameter {i+1}", row_data.get("param",""), key=f"OthersParam_{i}"
         )
@@ -490,11 +499,15 @@ with col1.form("coa_form"):
         st.session_state["Others_rows"][i]["method"] = c4.text_input(
             f"Others Method {i+1}", row_data.get("method",""), key=f"OthersMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_others_{i}"):
+            st.session_state["Others_rows"].pop(i)
+            st.rerun()
 
-    if st.form_submit_button("Add New Others Row"):
+    if st.button("Add New Others Row"):
         st.session_state["Others_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # ASSAYS
     st.subheader("Assays")
     assays_col1, assays_col2, assays_col3 = st.columns(3)
     assays_spec = assays_col1.text_input("Specification for Assays", placeholder="X")
@@ -503,7 +516,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Assays Rows")
     for i, row_data in enumerate(st.session_state["Assays_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["Assays_rows"][i]["param"] = c1.text_input(
             f"Assays Parameter {i+1}", row_data.get("param",""), key=f"AssaysParam_{i}"
         )
@@ -516,11 +529,15 @@ with col1.form("coa_form"):
         st.session_state["Assays_rows"][i]["method"] = c4.text_input(
             f"Assays Method {i+1}", row_data.get("method",""), key=f"AssaysMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_assays_{i}"):
+            st.session_state["Assays_rows"].pop(i)
+            st.rerun()
 
-    if st.form_submit_button("Add New Assays Row"):
+    if st.button("Add New Assays Row"):
         st.session_state["Assays_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # PESTICIDES
     st.subheader("Pesticides")
     pest_col1, pest_col2, pest_col3 = st.columns(3)
     pesticide_spec = pest_col1.text_input("Specification for Pesticide", value="Meet USP<561>")
@@ -529,7 +546,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Pesticides Rows")
     for i, row_data in enumerate(st.session_state["Pesticides_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["Pesticides_rows"][i]["param"] = c1.text_input(
             f"Pesticides Parameter {i+1}", row_data.get("param",""), key=f"PesticidesParam_{i}"
         )
@@ -542,11 +559,15 @@ with col1.form("coa_form"):
         st.session_state["Pesticides_rows"][i]["method"] = c4.text_input(
             f"Pesticides Method {i+1}", row_data.get("method",""), key=f"PesticidesMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_pesticides_{i}"):
+            st.session_state["Pesticides_rows"].pop(i)
+            st.rerun()
 
-    if st.form_submit_button("Add New Pesticides Row"):
+    if st.button("Add New Pesticides Row"):
         st.session_state["Pesticides_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # RESIDUAL SOLVENT
     st.subheader("Residual Solvent")
     rs_col1, rs_col2, rs_col3 = st.columns(3)
     residual_solvent_spec = rs_col1.text_input("Specification for Residual Solvent", placeholder="X")
@@ -555,7 +576,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Residual Solvent Rows")
     for i, row_data in enumerate(st.session_state["ResidualSolvent_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["ResidualSolvent_rows"][i]["param"] = c1.text_input(
             f"Residual Solvent Parameter {i+1}", row_data.get("param",""), key=f"ResidualSolventParam_{i}"
         )
@@ -568,11 +589,15 @@ with col1.form("coa_form"):
         st.session_state["ResidualSolvent_rows"][i]["method"] = c4.text_input(
             f"Residual Solvent Method {i+1}", row_data.get("method",""), key=f"ResidualSolventMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_residual_{i}"):
+            st.session_state["ResidualSolvent_rows"].pop(i)
+            st.rerun()
 
-    if st.form_submit_button("Add New Residual Solvent Row"):
+    if st.button("Add New Residual Solvent Row"):
         st.session_state["ResidualSolvent_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # MICROBIOLOGICAL
     st.subheader("Microbiological Profile")
     micro_1col1, micro_1col2, micro_1col3 = st.columns(3)
     total_plate_count_spec = micro_1col1.text_input("Spec for Total Plate Count", value="Not more than X cfu/g")
@@ -601,7 +626,7 @@ with col1.form("coa_form"):
 
     st.markdown("#### Add Additional Microbiological Profile Rows")
     for i, row_data in enumerate(st.session_state["MicrobiologicalProfile_rows"]):
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
         st.session_state["MicrobiologicalProfile_rows"][i]["param"] = c1.text_input(
             f"Microbio Parameter {i+1}", row_data.get("param",""), key=f"MicrobioParam_{i}"
         )
@@ -614,302 +639,303 @@ with col1.form("coa_form"):
         st.session_state["MicrobiologicalProfile_rows"][i]["method"] = c4.text_input(
             f"Microbio Method {i+1}", row_data.get("method",""), key=f"MicrobioMethod_{i}"
         )
+        if del_col.button("Delete", key=f"del_micro_{i}"):
+            st.session_state["MicrobiologicalProfile_rows"].pop(i)
+            st.rerun()
 
-    if st.form_submit_button("Add New Microbiological Row"):
+    if st.button("Add New Microbiological Row"):
         st.session_state["MicrobiologicalProfile_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # Declaration
     st.subheader("Declaration - Allergen Statement")
     allergen_statement = st.selectbox("Allergen Statement", options=["Free from allergen", "Contains Allergen"])
 
-    preview_button = st.form_submit_button("Preview")
-    download_button = st.form_submit_button("Compile and Generate PDF")
+    # ----------- PREVIEW & COMPILE BUTTONS -----------
+    st.write("---")
+    if st.button("Preview"):
+        data = {
+            "product_name": product_name,
+            "botanical_name": botanical_name,
+            "chemical_name": chemical_name,
+            "cas_no": cas_no,
+            "product_code": product_code,
+            "batch_no": batch_no,
+            "manufacturing_date": manufacturing_date,
+            "reanalysis_date": reanalysis_date,
+            "quantity": quantity,
+            "origin": origin,
+            "plant_part": plant_part,
+            "extraction_ratio": extraction_ratio,
+            "solvent": solvent,
 
-if preview_button:
-    data = {
-        "product_name": product_name,
-        "botanical_name": botanical_name,
-        "chemical_name": chemical_name,
-        "cas_no": cas_no,
-        "product_code": product_code,
-        "batch_no": batch_no,
-        "manufacturing_date": manufacturing_date,
-        "reanalysis_date": reanalysis_date,
-        "quantity": quantity,
-        "origin": origin,
-        "plant_part": plant_part,
-        "extraction_ratio": extraction_ratio,
-        "solvent": solvent,
+            "description_spec": description_spec,
+            "description_result": description_result,
+            "description_method": description_method,
+            "identification_spec": identification_spec,
+            "identification_result": identification_result,
+            "identification_method": identification_method,
+            "loss_on_drying_spec": loss_on_drying_spec,
+            "loss_on_drying_result": loss_on_drying_result,
+            "loss_on_drying_method": loss_on_drying_method,
+            "moisture_spec": moisture_spec,
+            "moisture_result": moisture_result,
+            "moisture_method": moisture_method,
+            "particle_size_spec": particle_size_spec,
+            "particle_size_result": particle_size_result,
+            "particle_size_method": particle_size_method,
+            "ash_contents_spec": ash_contents_spec,
+            "ash_contents_result": ash_contents_result,
+            "ash_contents_method": ash_contents_method,
+            "residue_on_ignition_spec": residue_on_ignition_spec,
+            "residue_on_ignition_result": residue_on_ignition_result,
+            "residue_on_ignition_method": residue_on_ignition_method,
+            "bulk_density_spec": bulk_density_spec,
+            "bulk_density_result": bulk_density_result,
+            "bulk_density_method": bulk_density_method,
+            "tapped_density_spec": tapped_density_spec,
+            "tapped_density_result": tapped_density_result,
+            "tapped_density_method": tapped_density_method,
+            "solubility_spec": solubility_spec,
+            "solubility_result": solubility_result,
+            "solubility_method": solubility_method,
+            "ph_spec": ph_spec,
+            "ph_result": ph_result,
+            "ph_method": ph_method,
+            "chlorides_nacl_spec": chlorides_nacl_spec,
+            "chlorides_nacl_result": chlorides_nacl_result,
+            "chlorides_nacl_method": chlorides_nacl_method,
+            "sulphates_spec": sulphates_spec,
+            "sulphates_result": sulphates_result,
+            "sulphates_method": sulphates_method,
+            "fats_spec": fats_spec,
+            "fats_result": fats_result,
+            "fats_method": fats_method,
+            "protein_spec": protein_spec,
+            "protein_result": protein_result,
+            "protein_method": protein_method,
+            "total_ig_g_spec": total_ig_g_spec,
+            "total_ig_g_result": total_ig_g_result,
+            "total_ig_g_method": total_ig_g_method,
+            "sodium_spec": sodium_spec,
+            "sodium_result": sodium_result,
+            "sodium_method": sodium_method,
+            "gluten_spec": gluten_spec,
+            "gluten_result": gluten_result,
+            "gluten_method": gluten_method,
+            "lead_spec": lead_spec,
+            "lead_result": lead_result,
+            "lead_method": lead_method,
+            "cadmium_spec": cadmium_spec,
+            "cadmium_result": cadmium_result,
+            "cadmium_method": cadmium_method,
+            "arsenic_spec": arsenic_spec,
+            "arsenic_result": arsenic_result,
+            "arsenic_method": arsenic_method,
+            "mercury_spec": mercury_spec,
+            "mercury_result": mercury_result,
+            "mercury_method": mercury_method,
+            "assays_spec": assays_spec,
+            "assays_result": assays_result,
+            "assays_method": assays_method,
+            "pesticide_spec": pesticide_spec,
+            "pesticide_result": pesticide_result,
+            "pesticide_method": pesticide_method,
+            "residual_solvent_spec": residual_solvent_spec,
+            "residual_solvent_result": residual_solvent_result,
+            "residual_solvent_method": residual_solvent_method,
+            "total_plate_count_spec": total_plate_count_spec,
+            "total_plate_count_result": total_plate_count_result,
+            "total_plate_count_method": total_plate_count_method,
+            "yeasts_mould_spec": yeasts_mould_spec,
+            "yeasts_mould_result": yeasts_mould_result,
+            "yeasts_mould_method": yeasts_mould_method,
+            "salmonella_spec": salmonella_spec,
+            "salmonella_result": salmonella_result,
+            "salmonella_method": salmonella_method,
+            "e_coli_spec": e_coli_spec,
+            "e_coli_result": e_coli_result,
+            "e_coli_method": e_coli_method,
+            "coliforms_spec": coliforms_spec,
+            "coliforms_result": coliforms_result,
+            "coliforms_method": coliforms_method,
 
-        "description_spec": description_spec,
-        "description_result": description_result,
-        "description_method": description_method,
-        "identification_spec": identification_spec,
-        "identification_result": identification_result,
-        "identification_method": identification_method,
-        "loss_on_drying_spec": loss_on_drying_spec,
-        "loss_on_drying_result": loss_on_drying_result,
-        "loss_on_drying_method": loss_on_drying_method,
-        "moisture_spec": moisture_spec,
-        "moisture_result": moisture_result,
-        "moisture_method": moisture_method,
-        "particle_size_spec": particle_size_spec,
-        "particle_size_result": particle_size_result,
-        "particle_size_method": particle_size_method,
-        "ash_contents_spec": ash_contents_spec,
-        "ash_contents_result": ash_contents_result,
-        "ash_contents_method": ash_contents_method,
-        "residue_on_ignition_spec": residue_on_ignition_spec,
-        "residue_on_ignition_result": residue_on_ignition_result,
-        "residue_on_ignition_method": residue_on_ignition_method,
-        "bulk_density_spec": bulk_density_spec,
-        "bulk_density_result": bulk_density_result,
-        "bulk_density_method": bulk_density_method,
-        "tapped_density_spec": tapped_density_spec,
-        "tapped_density_result": tapped_density_result,
-        "tapped_density_method": tapped_density_method,
-        "solubility_spec": solubility_spec,
-        "solubility_result": solubility_result,
-        "solubility_method": solubility_method,
-        "ph_spec": ph_spec,
-        "ph_result": ph_result,
-        "ph_method": ph_method,
-        "chlorides_nacl_spec": chlorides_nacl_spec,
-        "chlorides_nacl_result": chlorides_nacl_result,
-        "chlorides_nacl_method": chlorides_nacl_method,
-        "sulphates_spec": sulphates_spec,
-        "sulphates_result": sulphates_result,
-        "sulphates_method": sulphates_method,
-        "fats_spec": fats_spec,
-        "fats_result": fats_result,
-        "fats_method": fats_method,
-        "protein_spec": protein_spec,
-        "protein_result": protein_result,
-        "protein_method": protein_method,
-        "total_ig_g_spec": total_ig_g_spec,
-        "total_ig_g_result": total_ig_g_result,
-        "total_ig_g_method": total_ig_g_method,
-        "sodium_spec": sodium_spec,
-        "sodium_result": sodium_result,
-        "sodium_method": sodium_method,
-        "gluten_spec": gluten_spec,
-        "gluten_result": gluten_result,
-        "gluten_method": gluten_method,
-        "lead_spec": lead_spec,
-        "lead_result": lead_result,
-        "lead_method": lead_method,
-        "cadmium_spec": cadmium_spec,
-        "cadmium_result": cadmium_result,
-        "cadmium_method": cadmium_method,
-        "arsenic_spec": arsenic_spec,
-        "arsenic_result": arsenic_result,
-        "arsenic_method": arsenic_method,
-        "mercury_spec": mercury_spec,
-        "mercury_result": mercury_result,
-        "mercury_method": mercury_method,
-        "assays_spec": assays_spec,
-        "assays_result": assays_result,
-        "assays_method": assays_method,
-        "pesticide_spec": pesticide_spec,
-        "pesticide_result": pesticide_result,
-        "pesticide_method": pesticide_method,
-        "residual_solvent_spec": residual_solvent_spec,
-        "residual_solvent_result": residual_solvent_result,
-        "residual_solvent_method": residual_solvent_method,
-        "total_plate_count_spec": total_plate_count_spec,
-        "total_plate_count_result": total_plate_count_result,
-        "total_plate_count_method": total_plate_count_method,
-        "yeasts_mould_spec": yeasts_mould_spec,
-        "yeasts_mould_result": yeasts_mould_result,
-        "yeasts_mould_method": yeasts_mould_method,
-        "salmonella_spec": salmonella_spec,
-        "salmonella_result": salmonella_result,
-        "salmonella_method": salmonella_method,
-        "e_coli_spec": e_coli_spec,
-        "e_coli_result": e_coli_result,
-        "e_coli_method": e_coli_method,
-        "coliforms_spec": coliforms_spec,
-        "coliforms_result": coliforms_result,
-        "coliforms_method": coliforms_method,
+            "allergen_statement": allergen_statement,
 
-        "allergen_statement": allergen_statement,
+            "physical_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Physical_rows"]
+            ],
+            "others_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Others_rows"]
+            ],
+            "assays_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Assays_rows"]
+            ],
+            "pesticides_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Pesticides_rows"]
+            ],
+            "residual_solvent_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["ResidualSolvent_rows"]
+            ],
+            "microbio_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["MicrobiologicalProfile_rows"]
+            ],
+        }
 
-        "physical_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Physical_rows"]
-        ],
-        "others_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Others_rows"]
-        ],
-        "assays_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Assays_rows"]
-        ],
-        "pesticides_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Pesticides_rows"]
-        ],
-        "residual_solvent_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["ResidualSolvent_rows"]
-        ],
-        "microbio_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["MicrobiologicalProfile_rows"]
-        ],
-    }
-
-    pdf_buffer = generate_pdf(data)
-    if pdf_buffer:
-        doc_preview = fitz.open(stream=pdf_buffer, filetype="pdf")
-        with col2:
-            for page in doc_preview:
-                pix = page.get_pixmap()
-                st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_container_width=True)
-        with col1:
+        pdf_buffer = generate_pdf(data)
+        if pdf_buffer:
+            doc_preview = fitz.open(stream=pdf_buffer, filetype="pdf")
+            with col2:
+                for page in doc_preview:
+                    pix = page.get_pixmap()
+                    st.image(pix.tobytes(), caption=f"Page {page.number + 1}", use_container_width=True)
             st.success("Preview generated successfully!")
 
-if download_button:
-    data = {
-        # same dictionary as above
-        "product_name": product_name,
-        "botanical_name": botanical_name,
-        "chemical_name": chemical_name,
-        "cas_no": cas_no,
-        "product_code": product_code,
-        "batch_no": batch_no,
-        "manufacturing_date": manufacturing_date,
-        "reanalysis_date": reanalysis_date,
-        "quantity": quantity,
-        "origin": origin,
-        "plant_part": plant_part,
-        "extraction_ratio": extraction_ratio,
-        "solvent": solvent,
-        "description_spec": description_spec,
-        "description_result": description_result,
-        "description_method": description_method,
-        "identification_spec": identification_spec,
-        "identification_result": identification_result,
-        "identification_method": identification_method,
-        "loss_on_drying_spec": loss_on_drying_spec,
-        "loss_on_drying_result": loss_on_drying_result,
-        "loss_on_drying_method": loss_on_drying_method,
-        "moisture_spec": moisture_spec,
-        "moisture_result": moisture_result,
-        "moisture_method": moisture_method,
-        "particle_size_spec": particle_size_spec,
-        "particle_size_result": particle_size_result,
-        "particle_size_method": particle_size_method,
-        "ash_contents_spec": ash_contents_spec,
-        "ash_contents_result": ash_contents_result,
-        "ash_contents_method": ash_contents_method,
-        "residue_on_ignition_spec": residue_on_ignition_spec,
-        "residue_on_ignition_result": residue_on_ignition_result,
-        "residue_on_ignition_method": residue_on_ignition_method,
-        "bulk_density_spec": bulk_density_spec,
-        "bulk_density_result": bulk_density_result,
-        "bulk_density_method": bulk_density_method,
-        "tapped_density_spec": tapped_density_spec,
-        "tapped_density_result": tapped_density_result,
-        "tapped_density_method": tapped_density_method,
-        "solubility_spec": solubility_spec,
-        "solubility_result": solubility_result,
-        "solubility_method": solubility_method,
-        "ph_spec": ph_spec,
-        "ph_result": ph_result,
-        "ph_method": ph_method,
-        "chlorides_nacl_spec": chlorides_nacl_spec,
-        "chlorides_nacl_result": chlorides_nacl_result,
-        "chlorides_nacl_method": chlorides_nacl_method,
-        "sulphates_spec": sulphates_spec,
-        "sulphates_result": sulphates_result,
-        "sulphates_method": sulphates_method,
-        "fats_spec": fats_spec,
-        "fats_result": fats_result,
-        "fats_method": fats_method,
-        "protein_spec": protein_spec,
-        "protein_result": protein_result,
-        "protein_method": protein_method,
-        "total_ig_g_spec": total_ig_g_spec,
-        "total_ig_g_result": total_ig_g_result,
-        "total_ig_g_method": total_ig_g_method,
-        "sodium_spec": sodium_spec,
-        "sodium_result": sodium_result,
-        "sodium_method": sodium_method,
-        "gluten_spec": gluten_spec,
-        "gluten_result": gluten_result,
-        "gluten_method": gluten_method,
-        "lead_spec": lead_spec,
-        "lead_result": lead_result,
-        "lead_method": lead_method,
-        "cadmium_spec": cadmium_spec,
-        "cadmium_result": cadmium_result,
-        "cadmium_method": cadmium_method,
-        "arsenic_spec": arsenic_spec,
-        "arsenic_result": arsenic_result,
-        "arsenic_method": arsenic_method,
-        "mercury_spec": mercury_spec,
-        "mercury_result": mercury_result,
-        "mercury_method": mercury_method,
-        "assays_spec": assays_spec,
-        "assays_result": assays_result,
-        "assays_method": assays_method,
-        "pesticide_spec": pesticide_spec,
-        "pesticide_result": pesticide_result,
-        "pesticide_method": pesticide_method,
-        "residual_solvent_spec": residual_solvent_spec,
-        "residual_solvent_result": residual_solvent_result,
-        "residual_solvent_method": residual_solvent_method,
-        "total_plate_count_spec": total_plate_count_spec,
-        "total_plate_count_result": total_plate_count_result,
-        "total_plate_count_method": total_plate_count_method,
-        "yeasts_mould_spec": yeasts_mould_spec,
-        "yeasts_mould_result": yeasts_mould_result,
-        "yeasts_mould_method": yeasts_mould_method,
-        "salmonella_spec": salmonella_spec,
-        "salmonella_result": salmonella_result,
-        "salmonella_method": salmonella_method,
-        "e_coli_spec": e_coli_spec,
-        "e_coli_result": e_coli_result,
-        "e_coli_method": e_coli_method,
-        "coliforms_spec": coliforms_spec,
-        "coliforms_result": coliforms_result,
-        "coliforms_method": coliforms_method,
-        "allergen_statement": allergen_statement,
+    if st.button("Compile and Generate PDF"):
+        data = {
+            "product_name": product_name,
+            "botanical_name": botanical_name,
+            "chemical_name": chemical_name,
+            "cas_no": cas_no,
+            "product_code": product_code,
+            "batch_no": batch_no,
+            "manufacturing_date": manufacturing_date,
+            "reanalysis_date": reanalysis_date,
+            "quantity": quantity,
+            "origin": origin,
+            "plant_part": plant_part,
+            "extraction_ratio": extraction_ratio,
+            "solvent": solvent,
+            "description_spec": description_spec,
+            "description_result": description_result,
+            "description_method": description_method,
+            "identification_spec": identification_spec,
+            "identification_result": identification_result,
+            "identification_method": identification_method,
+            "loss_on_drying_spec": loss_on_drying_spec,
+            "loss_on_drying_result": loss_on_drying_result,
+            "loss_on_drying_method": loss_on_drying_method,
+            "moisture_spec": moisture_spec,
+            "moisture_result": moisture_result,
+            "moisture_method": moisture_method,
+            "particle_size_spec": particle_size_spec,
+            "particle_size_result": particle_size_result,
+            "particle_size_method": particle_size_method,
+            "ash_contents_spec": ash_contents_spec,
+            "ash_contents_result": ash_contents_result,
+            "ash_contents_method": ash_contents_method,
+            "residue_on_ignition_spec": residue_on_ignition_spec,
+            "residue_on_ignition_result": residue_on_ignition_result,
+            "residue_on_ignition_method": residue_on_ignition_method,
+            "bulk_density_spec": bulk_density_spec,
+            "bulk_density_result": bulk_density_result,
+            "bulk_density_method": bulk_density_method,
+            "tapped_density_spec": tapped_density_spec,
+            "tapped_density_result": tapped_density_result,
+            "tapped_density_method": tapped_density_method,
+            "solubility_spec": solubility_spec,
+            "solubility_result": solubility_result,
+            "solubility_method": solubility_method,
+            "ph_spec": ph_spec,
+            "ph_result": ph_result,
+            "ph_method": ph_method,
+            "chlorides_nacl_spec": chlorides_nacl_spec,
+            "chlorides_nacl_result": chlorides_nacl_result,
+            "chlorides_nacl_method": chlorides_nacl_method,
+            "sulphates_spec": sulphates_spec,
+            "sulphates_result": sulphates_result,
+            "sulphates_method": sulphates_method,
+            "fats_spec": fats_spec,
+            "fats_result": fats_result,
+            "fats_method": fats_method,
+            "protein_spec": protein_spec,
+            "protein_result": protein_result,
+            "protein_method": protein_method,
+            "total_ig_g_spec": total_ig_g_spec,
+            "total_ig_g_result": total_ig_g_result,
+            "total_ig_g_method": total_ig_g_method,
+            "sodium_spec": sodium_spec,
+            "sodium_result": sodium_result,
+            "sodium_method": sodium_method,
+            "gluten_spec": gluten_spec,
+            "gluten_result": gluten_result,
+            "gluten_method": gluten_method,
+            "lead_spec": lead_spec,
+            "lead_result": lead_result,
+            "lead_method": lead_method,
+            "cadmium_spec": cadmium_spec,
+            "cadmium_result": cadmium_result,
+            "cadmium_method": cadmium_method,
+            "arsenic_spec": arsenic_spec,
+            "arsenic_result": arsenic_result,
+            "arsenic_method": arsenic_method,
+            "mercury_spec": mercury_spec,
+            "mercury_result": mercury_result,
+            "mercury_method": mercury_method,
+            "assays_spec": assays_spec,
+            "assays_result": assays_result,
+            "assays_method": assays_method,
+            "pesticide_spec": pesticide_spec,
+            "pesticide_result": pesticide_result,
+            "pesticide_method": pesticide_method,
+            "residual_solvent_spec": residual_solvent_spec,
+            "residual_solvent_result": residual_solvent_result,
+            "residual_solvent_method": residual_solvent_method,
+            "total_plate_count_spec": total_plate_count_spec,
+            "total_plate_count_result": total_plate_count_result,
+            "total_plate_count_method": total_plate_count_method,
+            "yeasts_mould_spec": yeasts_mould_spec,
+            "yeasts_mould_result": yeasts_mould_result,
+            "yeasts_mould_method": yeasts_mould_method,
+            "salmonella_spec": salmonella_spec,
+            "salmonella_result": salmonella_result,
+            "salmonella_method": salmonella_method,
+            "e_coli_spec": e_coli_spec,
+            "e_coli_result": e_coli_result,
+            "e_coli_method": e_coli_method,
+            "coliforms_spec": coliforms_spec,
+            "coliforms_result": coliforms_result,
+            "coliforms_method": coliforms_method,
+            "allergen_statement": allergen_statement,
 
-        "physical_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Physical_rows"]
-        ],
-        "others_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Others_rows"]
-        ],
-        "assays_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Assays_rows"]
-        ],
-        "pesticides_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["Pesticides_rows"]
-        ],
-        "residual_solvent_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["ResidualSolvent_rows"]
-        ],
-        "microbio_extra_rows": [
-            (row["param"], row["spec"], row["result"], row["method"])
-            for row in st.session_state["MicrobiologicalProfile_rows"]
-        ],
-    }
+            "physical_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Physical_rows"]
+            ],
+            "others_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Others_rows"]
+            ],
+            "assays_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Assays_rows"]
+            ],
+            "pesticides_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["Pesticides_rows"]
+            ],
+            "residual_solvent_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["ResidualSolvent_rows"]
+            ],
+            "microbio_extra_rows": [
+                (row["param"], row["spec"], row["result"], row["method"])
+                for row in st.session_state["MicrobiologicalProfile_rows"]
+            ],
+        }
 
-    pdf_buffer = generate_pdf(data)
-    if pdf_buffer:
-        st.download_button(
-            label="Download COA PDF",
-            data=pdf_buffer,
-            file_name=(product_name or "COA") + ".pdf",
-            mime="application/pdf"
-        )
-        st.success("COA PDF generated and ready for download!")
+        pdf_buffer = generate_pdf(data)
+        if pdf_buffer:
+            st.download_button(
+                label="Download COA PDF",
+                data=pdf_buffer,
+                file_name=(product_name or "COA") + ".pdf",
+                mime="application/pdf"
+            )
+            st.success("COA PDF generated and ready for download!")
