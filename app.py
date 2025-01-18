@@ -441,7 +441,7 @@ with col1:
 
     st.markdown("#### Add Additional Physical Rows")
     for i, row_data in enumerate(st.session_state["Physical_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["Physical_rows"][i]["param"] = c1.text_input(
             f"Physical Parameter {i+1}", row_data["param"], key=f"PhysicalParam_{i}"
         )
@@ -486,7 +486,7 @@ with col1:
 
     st.markdown("#### Add Additional Others Rows")
     for i, row_data in enumerate(st.session_state["Others_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["Others_rows"][i]["param"] = c1.text_input(
             f"Others Parameter {i+1}", row_data.get("param",""), key=f"OthersParam_{i}"
         )
@@ -516,7 +516,7 @@ with col1:
 
     st.markdown("#### Add Additional Assays Rows")
     for i, row_data in enumerate(st.session_state["Assays_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["Assays_rows"][i]["param"] = c1.text_input(
             f"Assays Parameter {i+1}", row_data.get("param",""), key=f"AssaysParam_{i}"
         )
@@ -546,7 +546,7 @@ with col1:
 
     st.markdown("#### Add Additional Pesticides Rows")
     for i, row_data in enumerate(st.session_state["Pesticides_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["Pesticides_rows"][i]["param"] = c1.text_input(
             f"Pesticides Parameter {i+1}", row_data.get("param",""), key=f"PesticidesParam_{i}"
         )
@@ -576,7 +576,7 @@ with col1:
 
     st.markdown("#### Add Additional Residual Solvent Rows")
     for i, row_data in enumerate(st.session_state["ResidualSolvent_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["ResidualSolvent_rows"][i]["param"] = c1.text_input(
             f"Residual Solvent Parameter {i+1}", row_data.get("param",""), key=f"ResidualSolventParam_{i}"
         )
@@ -626,7 +626,7 @@ with col1:
 
     st.markdown("#### Add Additional Microbiological Profile Rows")
     for i, row_data in enumerate(st.session_state["MicrobiologicalProfile_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 3, 3, 3, 1])
+        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
         st.session_state["MicrobiologicalProfile_rows"][i]["param"] = c1.text_input(
             f"Microbio Parameter {i+1}", row_data.get("param",""), key=f"MicrobioParam_{i}"
         )
