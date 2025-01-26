@@ -700,7 +700,7 @@ with col1:
 
     others_1 = st.columns([3, 2.5, 2.5, 2])
     st.session_state["lead_spec"] = others_1[0].text_input("Spec for Lead", value=st.session_state["lead_spec"])
-    st.session_state["lead_result"] = others_1[1].text_input("Result for Lead", value=st.session_state["lead_result"], placeholder="X")
+    st.session_state["lead_result"] = others_1[1].text_input("Result for Lead", value=st.session_state["lead_result"], placeholder="X ppm")
     st.session_state["lead_method"] = others_1[2].text_input("Method for Lead", value=st.session_state["lead_method"])
     if others_1[3].button("Delete", key="del_lead"):
         st.session_state["lead_spec"] = ""
@@ -714,7 +714,7 @@ with col1:
 
     others_2 = st.columns([3, 2.5, 2.5, 2])
     st.session_state["cadmium_spec"] = others_2[0].text_input("Spec for Cadmium", value=st.session_state["cadmium_spec"])
-    st.session_state["cadmium_result"] = others_2[1].text_input("Result for Cadmium", value=st.session_state["cadmium_result"], placeholder="X")
+    st.session_state["cadmium_result"] = others_2[1].text_input("Result for Cadmium", value=st.session_state["cadmium_result"], placeholder="X ppm")
     st.session_state["cadmium_method"] = others_2[2].text_input("Method for Cadmium", value=st.session_state["cadmium_method"])
     if others_2[3].button("Delete", key="del_cadmium"):
         st.session_state["cadmium_spec"] = ""
@@ -728,7 +728,7 @@ with col1:
 
     others_3 = st.columns([3, 2.5, 2.5, 2])
     st.session_state["arsenic_spec"] = others_3[0].text_input("Spec for Arsenic", value=st.session_state["arsenic_spec"])
-    st.session_state["arsenic_result"] = others_3[1].text_input("Result for Arsenic", value=st.session_state["arsenic_result"], placeholder="X")
+    st.session_state["arsenic_result"] = others_3[1].text_input("Result for Arsenic", value=st.session_state["arsenic_result"], placeholder="X ppm")
     st.session_state["arsenic_method"] = others_3[2].text_input("Method for Arsenic", value=st.session_state["arsenic_method"])
     if others_3[3].button("Delete", key="del_arsenic"):
         st.session_state["arsenic_spec"] = ""
@@ -742,7 +742,7 @@ with col1:
 
     others_4 = st.columns([3, 2.5, 2.5, 2])
     st.session_state["mercury_spec"] = others_4[0].text_input("Spec for Mercury", value=st.session_state["mercury_spec"])
-    st.session_state["mercury_result"] = others_4[1].text_input("Result for Mercury", value=st.session_state["mercury_result"], placeholder="X")
+    st.session_state["mercury_result"] = others_4[1].text_input("Result for Mercury", value=st.session_state["mercury_result"], placeholder="X ppm")
     st.session_state["mercury_method"] = others_4[2].text_input("Method for Mercury", value=st.session_state["mercury_method"])
     if others_4[3].button("Delete", key="del_mercury"):
         st.session_state["mercury_spec"] = ""
