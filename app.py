@@ -45,9 +45,9 @@ def header_footer(canvas, doc):
     footer_path = os.path.join(os.getcwd(), "images", "footer.png")
 
     if os.path.exists(logo_path):
-        canvas.drawImage(logo_path, x=250, y=A4[1] - 65, width=100, height=50)
+        canvas.drawImage(logo_path, x=250, y=A4[1] - 55, width=100, height=50)
     if os.path.exists(footer_path):
-        canvas.drawImage(footer_path, x=50, y=20, width=500, height=70)
+        canvas.drawImage(footer_path, x=50, y=5, width=500, height=80)
     canvas.restoreState()
 
 
@@ -56,7 +56,7 @@ def generate_pdf(data):
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        topMargin=60,
+        topMargin=50,
         bottomMargin=80
     )
     styles = getSampleStyleSheet()
