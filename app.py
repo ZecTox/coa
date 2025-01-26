@@ -209,7 +209,6 @@ def generate_pdf(data):
         "Microbiological Profile": combine_section("microbio_extra_rows", microbio_base),
     }
 
-    # Build the table data
     for section_name, rows in sections.items():
         if rows:
             spec_data.append([Paragraph(f"<b>{section_name}</b>", style_for_sections), "", "", ""])
@@ -229,11 +228,10 @@ def generate_pdf(data):
                       "", "", ""])
     final_remark_row = len(spec_data) - 1
 
-    # Build table
     total_width = 500
-    col_widths = [total_width * 0.23, 
-                  total_width * 0.39, 
-                  total_width * 0.18, 
+    col_widths = [total_width * 0.23,
+                  total_width * 0.39,
+                  total_width * 0.18,
                   total_width * 0.20]
     spec_table = Table(spec_data, colWidths=col_widths)
 
@@ -309,6 +307,13 @@ def generate_pdf(data):
     return buffer
 
 # ----------------------------------------------------------------------------
+# HELPER to initialize a session_state key if not present
+# ----------------------------------------------------------------------------
+def init_ss(key, default):
+    if key not in st.session_state:
+        st.session_state[key] = default
+
+# ----------------------------------------------------------------------------
 # STREAMLIT UI
 # ----------------------------------------------------------------------------
 
@@ -347,97 +352,320 @@ with col1:
     # ---------- SPECIFICATIONS -----------
     st.header("Specifications")
 
-    # Physical
+    # -----------------------------------------------------------------
+    # PHYSICAL
+    # -----------------------------------------------------------------
     st.subheader("Physical")
-    phys_1col1, phys_1col2, phys_1col3 = st.columns(3)
-    description_spec = phys_1col1.text_input("Spec for Description", value="X with Characteristic taste and odour")
-    description_result = phys_1col2.text_input("Result for Description", value="Compiles")
-    description_method = phys_1col3.text_input("Method for Description", value="Physical")
 
-    phys_2col1, phys_2col2, phys_2col3 = st.columns(3)
-    identification_spec = phys_2col1.text_input("Spec for Identification", value="To comply by TLC")
-    identification_result = phys_2col2.text_input("Result for Identification", value="Compiles")
-    identification_method = phys_2col3.text_input("Method for Identification", value="TLC")
+    # For each "base" physical row, we'll store in session_state so we can clear it
+    init_ss("description_spec", "X with Characteristic taste and odour")
+    init_ss("description_result", "Compiles")
+    init_ss("description_method", "Physical")
 
-    phys_3col1, phys_3col2, phys_3col3 = st.columns(3)
-    loss_on_drying_spec = phys_3col1.text_input("Spec for Loss on Drying", value="Not more than X")
-    loss_on_drying_result = phys_3col2.text_input("Result for Loss on Drying", placeholder="X")
-    loss_on_drying_method = phys_3col3.text_input("Method for Loss on Drying", value="USP<731>")
+    phys1_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["description_spec"] = phys1_cols[0].text_area(
+    "Spec for Description",
+    value=st.session_state["description_spec"],
+    height = 68  # Adjust as needed
+    )
+    st.session_state["description_result"] = phys1_cols[1].text_input("Result for Description",
+        value=st.session_state["description_result"])
+    st.session_state["description_method"] = phys1_cols[2].text_input("Method for Description",
+        value=st.session_state["description_method"])
+    if phys1_cols[3].button("Delete", key="del_desc"):
+        st.session_state["description_spec"] = ""
+        st.session_state["description_result"] = ""
+        st.session_state["description_method"] = ""
+        st.rerun()
 
-    phys_4col1, phys_4col2, phys_4col3 = st.columns(3)
-    moisture_spec = phys_4col1.text_input("Spec for Moisture", value="Not more than X")
-    moisture_result = phys_4col2.text_input("Result for Moisture", placeholder="X")
-    moisture_method = phys_4col3.text_input("Method for Moisture", value="USP<921>")
+    init_ss("identification_spec", "To comply by TLC")
+    init_ss("identification_result", "Compiles")
+    init_ss("identification_method", "TLC")
 
-    phys_5col1, phys_5col2, phys_5col3 = st.columns(3)
-    particle_size_spec = phys_5col1.text_input("Spec for Particle Size", placeholder="X")
-    particle_size_result = phys_5col2.text_input("Result for Particle Size", placeholder="X")
-    particle_size_method = phys_5col3.text_input("Method for Particle Size", value="USP<786>")
+    phys2_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["identification_spec"] = phys2_cols[0].text_input("Spec for Identification",
+        value=st.session_state["identification_spec"])
+    st.session_state["identification_result"] = phys2_cols[1].text_input("Result for Identification",
+        value=st.session_state["identification_result"])
+    st.session_state["identification_method"] = phys2_cols[2].text_input("Method for Identification",
+        value=st.session_state["identification_method"])
+    if phys2_cols[3].button("Delete", key="del_ident"):
+        st.session_state["identification_spec"] = ""
+        st.session_state["identification_result"] = ""
+        st.session_state["identification_method"] = ""
+        st.rerun()
 
-    phys_6col1, phys_6col2, phys_6col3 = st.columns(3)
-    ash_contents_spec = phys_6col1.text_input("Spec for Ash Contents", value="Not more than X")
-    ash_contents_result = phys_6col2.text_input("Result for Ash Contents", placeholder="X")
-    ash_contents_method = phys_6col3.text_input("Method for Ash Contents", value="USP<561>")
+    init_ss("loss_on_drying_spec", "Not more than X")
+    init_ss("loss_on_drying_result", "")
+    init_ss("loss_on_drying_method", "USP<731>")
 
-    phys_7col1, phys_7col2, phys_7col3 = st.columns(3)
-    residue_on_ignition_spec = phys_7col1.text_input("Spec for Residue on Ignition", value="Not more than X")
-    residue_on_ignition_result = phys_7col2.text_input("Result for Residue on Ignition", placeholder="X")
-    residue_on_ignition_method = phys_7col3.text_input("Method for Residue on Ignition", value="USP<281>")
+    phys3_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["loss_on_drying_spec"] = phys3_cols[0].text_input("Spec for Loss on Drying",
+        value=st.session_state["loss_on_drying_spec"])
+    st.session_state["loss_on_drying_result"] = phys3_cols[1].text_input("Result for Loss on Drying",
+        value=st.session_state["loss_on_drying_result"], placeholder="X")
+    st.session_state["loss_on_drying_method"] = phys3_cols[2].text_input("Method for Loss on Drying",
+        value=st.session_state["loss_on_drying_method"])
+    if phys3_cols[3].button("Delete", key="del_lod"):
+        st.session_state["loss_on_drying_spec"] = ""
+        st.session_state["loss_on_drying_result"] = ""
+        st.session_state["loss_on_drying_method"] = ""
+        st.rerun()
 
-    phys_8col1, phys_8col2, phys_8col3 = st.columns(3)
-    bulk_density_spec = phys_8col1.text_input("Spec for Bulk Density", value="Between 0.3g/ml to 0.6g/ml")
-    bulk_density_result = phys_8col2.text_input("Result for Bulk Density", placeholder="X")
-    bulk_density_method = phys_8col3.text_input("Method for Bulk Density", value="USP<616>")
+    init_ss("moisture_spec", "Not more than X")
+    init_ss("moisture_result", "")
+    init_ss("moisture_method", "USP<921>")
 
-    phys_9col1, phys_9col2, phys_9col3 = st.columns(3)
-    tapped_density_spec = phys_9col1.text_input("Spec for Tapped Density", value="Between 0.4g/ml to 0.8g/ml")
-    tapped_density_result = phys_9col2.text_input("Result for Tapped Density", placeholder="X")
-    tapped_density_method = phys_9col3.text_input("Method for Tapped Density", value="USP<616>")
+    phys4_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["moisture_spec"] = phys4_cols[0].text_input("Spec for Moisture",
+        value=st.session_state["moisture_spec"])
+    st.session_state["moisture_result"] = phys4_cols[1].text_input("Result for Moisture",
+        value=st.session_state["moisture_result"], placeholder="X")
+    st.session_state["moisture_method"] = phys4_cols[2].text_input("Method for Moisture",
+        value=st.session_state["moisture_method"])
+    if phys4_cols[3].button("Delete", key="del_moist"):
+        st.session_state["moisture_spec"] = ""
+        st.session_state["moisture_result"] = ""
+        st.session_state["moisture_method"] = ""
+        st.rerun()
 
-    phys_10col1, phys_10col2, phys_10col3 = st.columns(3)
-    solubility_spec = phys_10col1.text_input("Spec for Solubility", placeholder="X")
-    solubility_result = phys_10col2.text_input("Result for Solubility", placeholder="X")
-    solubility_method = phys_10col3.text_input("Method for Solubility", value="USP<1236>")
+    init_ss("particle_size_spec", "")
+    init_ss("particle_size_result", "")
+    init_ss("particle_size_method", "USP<786>")
 
-    phys_11col1, phys_11col2, phys_11col3 = st.columns(3)
-    ph_spec = phys_11col1.text_input("Spec for pH", placeholder="X")
-    ph_result = phys_11col2.text_input("Result for pH", placeholder="X")
-    ph_method = phys_11col3.text_input("Method for pH", value="USP<791>")
+    phys5_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["particle_size_spec"] = phys5_cols[0].text_input("Spec for Particle Size",
+        value=st.session_state["particle_size_spec"], placeholder="X")
+    st.session_state["particle_size_result"] = phys5_cols[1].text_input("Result for Particle Size",
+        value=st.session_state["particle_size_result"], placeholder="X")
+    st.session_state["particle_size_method"] = phys5_cols[2].text_input("Method for Particle Size",
+        value=st.session_state["particle_size_method"])
+    if phys5_cols[3].button("Delete", key="del_partsize"):
+        st.session_state["particle_size_spec"] = ""
+        st.session_state["particle_size_result"] = ""
+        st.session_state["particle_size_method"] = ""
+        st.rerun()
 
-    phys_12col1, phys_12col2, phys_12col3 = st.columns(3)
-    chlorides_nacl_spec = phys_12col1.text_input("Spec for Chlorides of NaCl", placeholder="X")
-    chlorides_nacl_result = phys_12col2.text_input("Result for Chlorides of NaCl", placeholder="X")
-    chlorides_nacl_method = phys_12col3.text_input("Method for Chlorides of NaCl", value="USP<221>")
+    init_ss("ash_contents_spec", "Not more than X")
+    init_ss("ash_contents_result", "")
+    init_ss("ash_contents_method", "USP<561>")
 
-    phys_13col1, phys_13col2, phys_13col3 = st.columns(3)
-    sulphates_spec = phys_13col1.text_input("Spec for Sulphates", placeholder="X")
-    sulphates_result = phys_13col2.text_input("Result for Sulphates", placeholder="X")
-    sulphates_method = phys_13col3.text_input("Method for Sulphates", value="USP<221>")
+    phys6_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["ash_contents_spec"] = phys6_cols[0].text_input("Spec for Ash Contents",
+        value=st.session_state["ash_contents_spec"])
+    st.session_state["ash_contents_result"] = phys6_cols[1].text_input("Result for Ash Contents",
+        value=st.session_state["ash_contents_result"], placeholder="X")
+    st.session_state["ash_contents_method"] = phys6_cols[2].text_input("Method for Ash Contents",
+        value=st.session_state["ash_contents_method"])
+    if phys6_cols[3].button("Delete", key="del_ash"):
+        st.session_state["ash_contents_spec"] = ""
+        st.session_state["ash_contents_result"] = ""
+        st.session_state["ash_contents_method"] = ""
+        st.rerun()
 
-    phys_14col1, phys_14col2, phys_14col3 = st.columns(3)
-    fats_spec = phys_14col1.text_input("Spec for Fats", placeholder="X")
-    fats_result = phys_14col2.text_input("Result for Fats", placeholder="X")
-    fats_method = phys_14col3.text_input("Method for Fats", value="USP<731>")
+    init_ss("residue_on_ignition_spec", "Not more than X")
+    init_ss("residue_on_ignition_result", "")
+    init_ss("residue_on_ignition_method", "USP<281>")
 
-    phys_15col1, phys_15col2, phys_15col3 = st.columns(3)
-    protein_spec = phys_15col1.text_input("Spec for Protein", placeholder="X")
-    protein_result = phys_15col2.text_input("Result for Protein", placeholder="X")
-    protein_method = phys_15col3.text_input("Method for Protein", value="Kjeldahl")
+    phys7_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["residue_on_ignition_spec"] = phys7_cols[0].text_input("Spec for Residue on Ignition",
+        value=st.session_state["residue_on_ignition_spec"])
+    st.session_state["residue_on_ignition_result"] = phys7_cols[1].text_input("Result for Residue on Ignition",
+        value=st.session_state["residue_on_ignition_result"], placeholder="X")
+    st.session_state["residue_on_ignition_method"] = phys7_cols[2].text_input("Method for Residue on Ignition",
+        value=st.session_state["residue_on_ignition_method"])
+    if phys7_cols[3].button("Delete", key="del_resign"):
+        st.session_state["residue_on_ignition_spec"] = ""
+        st.session_state["residue_on_ignition_result"] = ""
+        st.session_state["residue_on_ignition_method"] = ""
+        st.rerun()
 
-    phys_16col1, phys_16col2, phys_16col3 = st.columns(3)
-    total_ig_g_spec = phys_16col1.text_input("Spec for Total IgG", placeholder="X")
-    total_ig_g_result = phys_16col2.text_input("Result for Total IgG", placeholder="X")
-    total_ig_g_method = phys_16col3.text_input("Method for Total IgG", value="HPLC")
+    init_ss("bulk_density_spec", "Between 0.3g/ml to 0.6g/ml")
+    init_ss("bulk_density_result", "")
+    init_ss("bulk_density_method", "USP<616>")
 
-    phys_17col1, phys_17col2, phys_17col3 = st.columns(3)
-    sodium_spec = phys_17col1.text_input("Spec for Sodium", placeholder="X")
-    sodium_result = phys_17col2.text_input("Result for Sodium", placeholder="X")
-    sodium_method = phys_17col3.text_input("Method for Sodium", value="ICP-MS")
+    phys8_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["bulk_density_spec"] = phys8_cols[0].text_input("Spec for Bulk Density",
+        value=st.session_state["bulk_density_spec"])
+    st.session_state["bulk_density_result"] = phys8_cols[1].text_input("Result for Bulk Density",
+        value=st.session_state["bulk_density_result"], placeholder="X")
+    st.session_state["bulk_density_method"] = phys8_cols[2].text_input("Method for Bulk Density",
+        value=st.session_state["bulk_density_method"])
+    if phys8_cols[3].button("Delete", key="del_bulk"):
+        st.session_state["bulk_density_spec"] = ""
+        st.session_state["bulk_density_result"] = ""
+        st.session_state["bulk_density_method"] = ""
+        st.rerun()
 
-    phys_18col1, phys_18col2, phys_18col3 = st.columns(3)
-    gluten_spec = phys_18col1.text_input("Spec for Gluten", value="NMT X")
-    gluten_result = phys_18col2.text_input("Result for Gluten", placeholder="X")
-    gluten_method = phys_18col3.text_input("Method for Gluten", value="ELISA")
+    init_ss("tapped_density_spec", "Between 0.4g/ml to 0.8g/ml")
+    init_ss("tapped_density_result", "")
+    init_ss("tapped_density_method", "USP<616>")
+
+    phys9_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["tapped_density_spec"] = phys9_cols[0].text_input("Spec for Tapped Density",
+        value=st.session_state["tapped_density_spec"])
+    st.session_state["tapped_density_result"] = phys9_cols[1].text_input("Result for Tapped Density",
+        value=st.session_state["tapped_density_result"], placeholder="X")
+    st.session_state["tapped_density_method"] = phys9_cols[2].text_input("Method for Tapped Density",
+        value=st.session_state["tapped_density_method"])
+    if phys9_cols[3].button("Delete", key="del_tapped"):
+        st.session_state["tapped_density_spec"] = ""
+        st.session_state["tapped_density_result"] = ""
+        st.session_state["tapped_density_method"] = ""
+        st.rerun()
+
+    init_ss("solubility_spec", "")
+    init_ss("solubility_result", "")
+    init_ss("solubility_method", "USP<1236>")
+
+    phys10_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["solubility_spec"] = phys10_cols[0].text_input("Spec for Solubility",
+        value=st.session_state["solubility_spec"], placeholder="X")
+    st.session_state["solubility_result"] = phys10_cols[1].text_input("Result for Solubility",
+        value=st.session_state["solubility_result"], placeholder="X")
+    st.session_state["solubility_method"] = phys10_cols[2].text_input("Method for Solubility",
+        value=st.session_state["solubility_method"])
+    if phys10_cols[3].button("Delete", key="del_solub"):
+        st.session_state["solubility_spec"] = ""
+        st.session_state["solubility_result"] = ""
+        st.session_state["solubility_method"] = ""
+        st.rerun()
+
+    init_ss("ph_spec", "")
+    init_ss("ph_result", "")
+    init_ss("ph_method", "USP<791>")
+
+    phys11_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["ph_spec"] = phys11_cols[0].text_input("Spec for pH",
+        value=st.session_state["ph_spec"], placeholder="X")
+    st.session_state["ph_result"] = phys11_cols[1].text_input("Result for pH",
+        value=st.session_state["ph_result"], placeholder="X")
+    st.session_state["ph_method"] = phys11_cols[2].text_input("Method for pH",
+        value=st.session_state["ph_method"])
+    if phys11_cols[3].button("Delete", key="del_ph"):
+        st.session_state["ph_spec"] = ""
+        st.session_state["ph_result"] = ""
+        st.session_state["ph_method"] = ""
+        st.rerun()
+
+    init_ss("chlorides_nacl_spec", "")
+    init_ss("chlorides_nacl_result", "")
+    init_ss("chlorides_nacl_method", "USP<221>")
+
+    phys12_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["chlorides_nacl_spec"] = phys12_cols[0].text_input("Spec for Chlorides of NaCl",
+        value=st.session_state["chlorides_nacl_spec"], placeholder="X")
+    st.session_state["chlorides_nacl_result"] = phys12_cols[1].text_input("Result for Chlorides of NaCl",
+        value=st.session_state["chlorides_nacl_result"], placeholder="X")
+    st.session_state["chlorides_nacl_method"] = phys12_cols[2].text_input("Method for Chlorides of NaCl",
+        value=st.session_state["chlorides_nacl_method"])
+    if phys12_cols[3].button("Delete", key="del_chlorides"):
+        st.session_state["chlorides_nacl_spec"] = ""
+        st.session_state["chlorides_nacl_result"] = ""
+        st.session_state["chlorides_nacl_method"] = ""
+        st.rerun()
+
+    init_ss("sulphates_spec", "")
+    init_ss("sulphates_result", "")
+    init_ss("sulphates_method", "USP<221>")
+
+    phys13_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["sulphates_spec"] = phys13_cols[0].text_input("Spec for Sulphates",
+        value=st.session_state["sulphates_spec"], placeholder="X")
+    st.session_state["sulphates_result"] = phys13_cols[1].text_input("Result for Sulphates",
+        value=st.session_state["sulphates_result"], placeholder="X")
+    st.session_state["sulphates_method"] = phys13_cols[2].text_input("Method for Sulphates",
+        value=st.session_state["sulphates_method"])
+    if phys13_cols[3].button("Delete", key="del_sulphates"):
+        st.session_state["sulphates_spec"] = ""
+        st.session_state["sulphates_result"] = ""
+        st.session_state["sulphates_method"] = ""
+        st.rerun()
+
+    init_ss("fats_spec", "")
+    init_ss("fats_result", "")
+    init_ss("fats_method", "USP<731>")
+
+    phys14_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["fats_spec"] = phys14_cols[0].text_input("Spec for Fats",
+        value=st.session_state["fats_spec"], placeholder="X")
+    st.session_state["fats_result"] = phys14_cols[1].text_input("Result for Fats",
+        value=st.session_state["fats_result"], placeholder="X")
+    st.session_state["fats_method"] = phys14_cols[2].text_input("Method for Fats",
+        value=st.session_state["fats_method"])
+    if phys14_cols[3].button("Delete", key="del_fats"):
+        st.session_state["fats_spec"] = ""
+        st.session_state["fats_result"] = ""
+        st.session_state["fats_method"] = ""
+        st.rerun()
+
+    init_ss("protein_spec", "")
+    init_ss("protein_result", "")
+    init_ss("protein_method", "Kjeldahl")
+
+    phys15_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["protein_spec"] = phys15_cols[0].text_input("Spec for Protein",
+        value=st.session_state["protein_spec"], placeholder="X")
+    st.session_state["protein_result"] = phys15_cols[1].text_input("Result for Protein",
+        value=st.session_state["protein_result"], placeholder="X")
+    st.session_state["protein_method"] = phys15_cols[2].text_input("Method for Protein",
+        value=st.session_state["protein_method"])
+    if phys15_cols[3].button("Delete", key="del_protein"):
+        st.session_state["protein_spec"] = ""
+        st.session_state["protein_result"] = ""
+        st.session_state["protein_method"] = ""
+        st.rerun()
+
+    init_ss("total_ig_g_spec", "")
+    init_ss("total_ig_g_result", "")
+    init_ss("total_ig_g_method", "HPLC")
+
+    phys16_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["total_ig_g_spec"] = phys16_cols[0].text_input("Spec for Total IgG",
+        value=st.session_state["total_ig_g_spec"], placeholder="X")
+    st.session_state["total_ig_g_result"] = phys16_cols[1].text_input("Result for Total IgG",
+        value=st.session_state["total_ig_g_result"], placeholder="X")
+    st.session_state["total_ig_g_method"] = phys16_cols[2].text_input("Method for Total IgG",
+        value=st.session_state["total_ig_g_method"])
+    if phys16_cols[3].button("Delete", key="del_igg"):
+        st.session_state["total_ig_g_spec"] = ""
+        st.session_state["total_ig_g_result"] = ""
+        st.session_state["total_ig_g_method"] = ""
+        st.rerun()
+
+    init_ss("sodium_spec", "")
+    init_ss("sodium_result", "")
+    init_ss("sodium_method", "ICP-MS")
+
+    phys17_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["sodium_spec"] = phys17_cols[0].text_input("Spec for Sodium",
+        value=st.session_state["sodium_spec"], placeholder="X")
+    st.session_state["sodium_result"] = phys17_cols[1].text_input("Result for Sodium",
+        value=st.session_state["sodium_result"], placeholder="X")
+    st.session_state["sodium_method"] = phys17_cols[2].text_input("Method for Sodium",
+        value=st.session_state["sodium_method"])
+    if phys17_cols[3].button("Delete", key="del_sodium"):
+        st.session_state["sodium_spec"] = ""
+        st.session_state["sodium_result"] = ""
+        st.session_state["sodium_method"] = ""
+        st.rerun()
+
+    init_ss("gluten_spec", "NMT X")
+    init_ss("gluten_result", "")
+    init_ss("gluten_method", "ELISA")
+
+    phys18_cols = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["gluten_spec"] = phys18_cols[0].text_input("Spec for Gluten",
+        value=st.session_state["gluten_spec"])
+    st.session_state["gluten_result"] = phys18_cols[1].text_input("Result for Gluten",
+        value=st.session_state["gluten_result"], placeholder="X")
+    st.session_state["gluten_method"] = phys18_cols[2].text_input("Method for Gluten",
+        value=st.session_state["gluten_method"])
+    if phys18_cols[3].button("Delete", key="del_gluten"):
+        st.session_state["gluten_spec"] = ""
+        st.session_state["gluten_result"] = ""
+        st.session_state["gluten_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Physical Rows")
     for i, row_data in enumerate(st.session_state["Physical_rows"]):
@@ -462,27 +690,65 @@ with col1:
         st.session_state["Physical_rows"].append({"param": "", "spec": "", "result": "", "method": ""})
         st.rerun()
 
+    # ----------------------------------------------------------------------
     # OTHERS
+    # ----------------------------------------------------------------------
     st.subheader("Others")
-    others_1col1, others_1col2, others_1col3 = st.columns(3)
-    lead_spec = others_1col1.text_input("Spec for Lead", value="Not more than X ppm")
-    lead_result = others_1col2.text_input("Result for Lead", placeholder="X")
-    lead_method = others_1col3.text_input("Method for Lead", value="ICP-MS")
+    init_ss("lead_spec", "Not more than X ppm")
+    init_ss("lead_result", "")
+    init_ss("lead_method", "ICP-MS")
 
-    others_2col1, others_2col2, others_2col3 = st.columns(3)
-    cadmium_spec = others_2col1.text_input("Spec for Cadmium", value="Not more than X ppm")
-    cadmium_result = others_2col2.text_input("Result for Cadmium", placeholder="X")
-    cadmium_method = others_2col3.text_input("Method for Cadmium", value="ICP-MS")
+    others_1 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["lead_spec"] = others_1[0].text_input("Spec for Lead", value=st.session_state["lead_spec"])
+    st.session_state["lead_result"] = others_1[1].text_input("Result for Lead", value=st.session_state["lead_result"], placeholder="X")
+    st.session_state["lead_method"] = others_1[2].text_input("Method for Lead", value=st.session_state["lead_method"])
+    if others_1[3].button("Delete", key="del_lead"):
+        st.session_state["lead_spec"] = ""
+        st.session_state["lead_result"] = ""
+        st.session_state["lead_method"] = ""
+        st.rerun()
 
-    others_3col1, others_3col2, others_3col3 = st.columns(3)
-    arsenic_spec = others_3col1.text_input("Spec for Arsenic", value="Not more than X ppm")
-    arsenic_result = others_3col2.text_input("Result for Arsenic", placeholder="X")
-    arsenic_method = others_3col3.text_input("Method for Arsenic", value="ICP-MS")
+    init_ss("cadmium_spec", "Not more than X ppm")
+    init_ss("cadmium_result", "")
+    init_ss("cadmium_method", "ICP-MS")
 
-    others_4col1, others_4col2, others_4col3 = st.columns(3)
-    mercury_spec = others_4col1.text_input("Spec for Mercury", value="Not more than X ppm")
-    mercury_result = others_4col2.text_input("Result for Mercury", placeholder="X")
-    mercury_method = others_4col3.text_input("Method for Mercury", value="ICP-MS")
+    others_2 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["cadmium_spec"] = others_2[0].text_input("Spec for Cadmium", value=st.session_state["cadmium_spec"])
+    st.session_state["cadmium_result"] = others_2[1].text_input("Result for Cadmium", value=st.session_state["cadmium_result"], placeholder="X")
+    st.session_state["cadmium_method"] = others_2[2].text_input("Method for Cadmium", value=st.session_state["cadmium_method"])
+    if others_2[3].button("Delete", key="del_cadmium"):
+        st.session_state["cadmium_spec"] = ""
+        st.session_state["cadmium_result"] = ""
+        st.session_state["cadmium_method"] = ""
+        st.rerun()
+
+    init_ss("arsenic_spec", "Not more than X ppm")
+    init_ss("arsenic_result", "")
+    init_ss("arsenic_method", "ICP-MS")
+
+    others_3 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["arsenic_spec"] = others_3[0].text_input("Spec for Arsenic", value=st.session_state["arsenic_spec"])
+    st.session_state["arsenic_result"] = others_3[1].text_input("Result for Arsenic", value=st.session_state["arsenic_result"], placeholder="X")
+    st.session_state["arsenic_method"] = others_3[2].text_input("Method for Arsenic", value=st.session_state["arsenic_method"])
+    if others_3[3].button("Delete", key="del_arsenic"):
+        st.session_state["arsenic_spec"] = ""
+        st.session_state["arsenic_result"] = ""
+        st.session_state["arsenic_method"] = ""
+        st.rerun()
+
+    init_ss("mercury_spec", "Not more than X ppm")
+    init_ss("mercury_result", "")
+    init_ss("mercury_method", "ICP-MS")
+
+    others_4 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["mercury_spec"] = others_4[0].text_input("Spec for Mercury", value=st.session_state["mercury_spec"])
+    st.session_state["mercury_result"] = others_4[1].text_input("Result for Mercury", value=st.session_state["mercury_result"], placeholder="X")
+    st.session_state["mercury_method"] = others_4[2].text_input("Method for Mercury", value=st.session_state["mercury_method"])
+    if others_4[3].button("Delete", key="del_mercury"):
+        st.session_state["mercury_spec"] = ""
+        st.session_state["mercury_result"] = ""
+        st.session_state["mercury_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Others Rows")
     for i, row_data in enumerate(st.session_state["Others_rows"]):
@@ -509,10 +775,22 @@ with col1:
 
     # ASSAYS
     st.subheader("Assays")
-    assays_col1, assays_col2, assays_col3 = st.columns(3)
-    assays_spec = assays_col1.text_input("Specification for Assays", placeholder="X")
-    assays_result = assays_col2.text_input("Result for Assays", placeholder="X")
-    assays_method = assays_col3.text_input("Method for Assays", placeholder="X")
+    init_ss("assays_spec", "")
+    init_ss("assays_result", "")
+    init_ss("assays_method", "")
+
+    assays_1 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["assays_spec"] = assays_1[0].text_input("Specification for Assays",
+        value=st.session_state["assays_spec"], placeholder="X")
+    st.session_state["assays_result"] = assays_1[1].text_input("Result for Assays",
+        value=st.session_state["assays_result"], placeholder="X")
+    st.session_state["assays_method"] = assays_1[2].text_input("Method for Assays",
+        value=st.session_state["assays_method"], placeholder="X")
+    if assays_1[3].button("Delete", key="del_assays_base"):
+        st.session_state["assays_spec"] = ""
+        st.session_state["assays_result"] = ""
+        st.session_state["assays_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Assays Rows")
     for i, row_data in enumerate(st.session_state["Assays_rows"]):
@@ -539,10 +817,22 @@ with col1:
 
     # PESTICIDES
     st.subheader("Pesticides")
-    pest_col1, pest_col2, pest_col3 = st.columns(3)
-    pesticide_spec = pest_col1.text_input("Specification for Pesticide", value="Meet USP<561>")
-    pesticide_result = pest_col2.text_input("Result for Pesticide", value="Compiles")
-    pesticide_method = pest_col3.text_input("Method for Pesticide", value="USP<561>")
+    init_ss("pesticide_spec", "Meet USP<561>")
+    init_ss("pesticide_result", "Compiles")
+    init_ss("pesticide_method", "USP<561>")
+
+    pest_1 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["pesticide_spec"] = pest_1[0].text_input("Specification for Pesticide",
+        value=st.session_state["pesticide_spec"])
+    st.session_state["pesticide_result"] = pest_1[1].text_input("Result for Pesticide",
+        value=st.session_state["pesticide_result"])
+    st.session_state["pesticide_method"] = pest_1[2].text_input("Method for Pesticide",
+        value=st.session_state["pesticide_method"])
+    if pest_1[3].button("Delete", key="del_pesticide_base"):
+        st.session_state["pesticide_spec"] = ""
+        st.session_state["pesticide_result"] = ""
+        st.session_state["pesticide_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Pesticides Rows")
     for i, row_data in enumerate(st.session_state["Pesticides_rows"]):
@@ -569,10 +859,22 @@ with col1:
 
     # RESIDUAL SOLVENT
     st.subheader("Residual Solvent")
-    rs_col1, rs_col2, rs_col3 = st.columns(3)
-    residual_solvent_spec = rs_col1.text_input("Specification for Residual Solvent", placeholder="X")
-    residual_solvent_result = rs_col2.text_input("Result for Residual Solvent", value="Compiles")
-    residual_solvent_method = rs_col3.text_input("Method for Residual Solvent", placeholder="X")
+    init_ss("residual_solvent_spec", "")
+    init_ss("residual_solvent_result", "Compiles")
+    init_ss("residual_solvent_method", "")
+
+    rs_1 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["residual_solvent_spec"] = rs_1[0].text_input("Specification for Residual Solvent",
+        value=st.session_state["residual_solvent_spec"], placeholder="X")
+    st.session_state["residual_solvent_result"] = rs_1[1].text_input("Result for Residual Solvent",
+        value=st.session_state["residual_solvent_result"])
+    st.session_state["residual_solvent_method"] = rs_1[2].text_input("Method for Residual Solvent",
+        value=st.session_state["residual_solvent_method"], placeholder="X")
+    if rs_1[3].button("Delete", key="del_resid_base"):
+        st.session_state["residual_solvent_spec"] = ""
+        st.session_state["residual_solvent_result"] = ""
+        st.session_state["residual_solvent_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Residual Solvent Rows")
     for i, row_data in enumerate(st.session_state["ResidualSolvent_rows"]):
@@ -599,30 +901,90 @@ with col1:
 
     # MICROBIOLOGICAL
     st.subheader("Microbiological Profile")
-    micro_1col1, micro_1col2, micro_1col3 = st.columns(3)
-    total_plate_count_spec = micro_1col1.text_input("Spec for Total Plate Count", value="Not more than X cfu/g")
-    total_plate_count_result = micro_1col2.text_input("Result for Total Plate Count", value="X cfu/g")
-    total_plate_count_method = micro_1col3.text_input("Method for Total Plate Count", value="USP<61>")
+    init_ss("total_plate_count_spec", "Not more than X cfu/g")
+    init_ss("total_plate_count_result", "X cfu/g")
+    init_ss("total_plate_count_method", "USP<61>")
 
-    micro_2col1, micro_2col2, micro_2col3 = st.columns(3)
-    yeasts_mould_spec = micro_2col1.text_input("Spec for Yeasts & Mould Count", value="Not more than X cfu/g")
-    yeasts_mould_result = micro_2col2.text_input("Result for Yeasts & Mould Count", value="X cfu/g")
-    yeasts_mould_method = micro_2col3.text_input("Method for Yeasts & Mould Count", value="USP<61>")
+    micro_1 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["total_plate_count_spec"] = micro_1[0].text_input("Spec for Total Plate Count",
+        value=st.session_state["total_plate_count_spec"])
+    st.session_state["total_plate_count_result"] = micro_1[1].text_input("Result for Total Plate Count",
+        value=st.session_state["total_plate_count_result"])
+    st.session_state["total_plate_count_method"] = micro_1[2].text_input("Method for Total Plate Count",
+        value=st.session_state["total_plate_count_method"])
+    if micro_1[3].button("Delete", key="del_tpc"):
+        st.session_state["total_plate_count_spec"] = ""
+        st.session_state["total_plate_count_result"] = ""
+        st.session_state["total_plate_count_method"] = ""
+        st.rerun()
 
-    micro_3col1, micro_3col2, micro_3col3 = st.columns(3)
-    salmonella_spec = micro_3col1.text_input("Spec for Salmonella", value="Absent/25g")
-    salmonella_result = micro_3col2.text_input("Result for Salmonella", value="Absent")
-    salmonella_method = micro_3col3.text_input("Method for Salmonella", value="USP<62>")
+    init_ss("yeasts_mould_spec", "Not more than X cfu/g")
+    init_ss("yeasts_mould_result", "X cfu/g")
+    init_ss("yeasts_mould_method", "USP<61>")
 
-    micro_4col1, micro_4col2, micro_4col3 = st.columns(3)
-    e_coli_spec = micro_4col1.text_input("Spec for Escherichia coli", value="Absent/10g")
-    e_coli_result = micro_4col2.text_input("Result for Escherichia coli", value="Absent")
-    e_coli_method = micro_4col3.text_input("Method for Escherichia coli", value="USP<62>")
+    micro_2 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["yeasts_mould_spec"] = micro_2[0].text_input("Spec for Yeasts & Mould Count",
+        value=st.session_state["yeasts_mould_spec"])
+    st.session_state["yeasts_mould_result"] = micro_2[1].text_input("Result for Yeasts & Mould Count",
+        value=st.session_state["yeasts_mould_result"])
+    st.session_state["yeasts_mould_method"] = micro_2[2].text_input("Method for Yeasts & Mould Count",
+        value=st.session_state["yeasts_mould_method"])
+    if micro_2[3].button("Delete", key="del_ym"):
+        st.session_state["yeasts_mould_spec"] = ""
+        st.session_state["yeasts_mould_result"] = ""
+        st.session_state["yeasts_mould_method"] = ""
+        st.rerun()
 
-    micro_5col1, micro_5col2, micro_5col3 = st.columns(3)
-    coliforms_spec = micro_5col1.text_input("Spec for Coliforms", value="NMT X cfu/g")
-    coliforms_result = micro_5col2.text_input("Result for Coliforms", placeholder="X")
-    coliforms_method = micro_5col3.text_input("Method for Coliforms", value="USP<62>")
+    init_ss("salmonella_spec", "Absent/25g")
+    init_ss("salmonella_result", "Absent")
+    init_ss("salmonella_method", "USP<62>")
+
+    micro_3 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["salmonella_spec"] = micro_3[0].text_input("Spec for Salmonella",
+        value=st.session_state["salmonella_spec"])
+    st.session_state["salmonella_result"] = micro_3[1].text_input("Result for Salmonella",
+        value=st.session_state["salmonella_result"])
+    st.session_state["salmonella_method"] = micro_3[2].text_input("Method for Salmonella",
+        value=st.session_state["salmonella_method"])
+    if micro_3[3].button("Delete", key="del_salmonella"):
+        st.session_state["salmonella_spec"] = ""
+        st.session_state["salmonella_result"] = ""
+        st.session_state["salmonella_method"] = ""
+        st.rerun()
+
+    init_ss("e_coli_spec", "Absent/10g")
+    init_ss("e_coli_result", "Absent")
+    init_ss("e_coli_method", "USP<62>")
+
+    micro_4 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["e_coli_spec"] = micro_4[0].text_input("Spec for Escherichia coli",
+        value=st.session_state["e_coli_spec"])
+    st.session_state["e_coli_result"] = micro_4[1].text_input("Result for Escherichia coli",
+        value=st.session_state["e_coli_result"])
+    st.session_state["e_coli_method"] = micro_4[2].text_input("Method for Escherichia coli",
+        value=st.session_state["e_coli_method"])
+    if micro_4[3].button("Delete", key="del_ecoli"):
+        st.session_state["e_coli_spec"] = ""
+        st.session_state["e_coli_result"] = ""
+        st.session_state["e_coli_method"] = ""
+        st.rerun()
+
+    init_ss("coliforms_spec", "NMT X cfu/g")
+    init_ss("coliforms_result", "")
+    init_ss("coliforms_method", "USP<62>")
+
+    micro_5 = st.columns([3, 2.5, 2.5, 2])
+    st.session_state["coliforms_spec"] = micro_5[0].text_input("Spec for Coliforms",
+        value=st.session_state["coliforms_spec"])
+    st.session_state["coliforms_result"] = micro_5[1].text_input("Result for Coliforms",
+        value=st.session_state["coliforms_result"], placeholder="X")
+    st.session_state["coliforms_method"] = micro_5[2].text_input("Method for Coliforms",
+        value=st.session_state["coliforms_method"])
+    if micro_5[3].button("Delete", key="del_coliforms"):
+        st.session_state["coliforms_spec"] = ""
+        st.session_state["coliforms_result"] = ""
+        st.session_state["coliforms_method"] = ""
+        st.rerun()
 
     st.markdown("#### Add Additional Microbiological Profile Rows")
     for i, row_data in enumerate(st.session_state["MicrobiologicalProfile_rows"]):
@@ -669,96 +1031,125 @@ with col1:
             "extraction_ratio": extraction_ratio,
             "solvent": solvent,
 
-            "description_spec": description_spec,
-            "description_result": description_result,
-            "description_method": description_method,
-            "identification_spec": identification_spec,
-            "identification_result": identification_result,
-            "identification_method": identification_method,
-            "loss_on_drying_spec": loss_on_drying_spec,
-            "loss_on_drying_result": loss_on_drying_result,
-            "loss_on_drying_method": loss_on_drying_method,
-            "moisture_spec": moisture_spec,
-            "moisture_result": moisture_result,
-            "moisture_method": moisture_method,
-            "particle_size_spec": particle_size_spec,
-            "particle_size_result": particle_size_result,
-            "particle_size_method": particle_size_method,
-            "ash_contents_spec": ash_contents_spec,
-            "ash_contents_result": ash_contents_result,
-            "ash_contents_method": ash_contents_method,
-            "residue_on_ignition_spec": residue_on_ignition_spec,
-            "residue_on_ignition_result": residue_on_ignition_result,
-            "residue_on_ignition_method": residue_on_ignition_method,
-            "bulk_density_spec": bulk_density_spec,
-            "bulk_density_result": bulk_density_result,
-            "bulk_density_method": bulk_density_method,
-            "tapped_density_spec": tapped_density_spec,
-            "tapped_density_result": tapped_density_result,
-            "tapped_density_method": tapped_density_method,
-            "solubility_spec": solubility_spec,
-            "solubility_result": solubility_result,
-            "solubility_method": solubility_method,
-            "ph_spec": ph_spec,
-            "ph_result": ph_result,
-            "ph_method": ph_method,
-            "chlorides_nacl_spec": chlorides_nacl_spec,
-            "chlorides_nacl_result": chlorides_nacl_result,
-            "chlorides_nacl_method": chlorides_nacl_method,
-            "sulphates_spec": sulphates_spec,
-            "sulphates_result": sulphates_result,
-            "sulphates_method": sulphates_method,
-            "fats_spec": fats_spec,
-            "fats_result": fats_result,
-            "fats_method": fats_method,
-            "protein_spec": protein_spec,
-            "protein_result": protein_result,
-            "protein_method": protein_method,
-            "total_ig_g_spec": total_ig_g_spec,
-            "total_ig_g_result": total_ig_g_result,
-            "total_ig_g_method": total_ig_g_method,
-            "sodium_spec": sodium_spec,
-            "sodium_result": sodium_result,
-            "sodium_method": sodium_method,
-            "gluten_spec": gluten_spec,
-            "gluten_result": gluten_result,
-            "gluten_method": gluten_method,
-            "lead_spec": lead_spec,
-            "lead_result": lead_result,
-            "lead_method": lead_method,
-            "cadmium_spec": cadmium_spec,
-            "cadmium_result": cadmium_result,
-            "cadmium_method": cadmium_method,
-            "arsenic_spec": arsenic_spec,
-            "arsenic_result": arsenic_result,
-            "arsenic_method": arsenic_method,
-            "mercury_spec": mercury_spec,
-            "mercury_result": mercury_result,
-            "mercury_method": mercury_method,
-            "assays_spec": assays_spec,
-            "assays_result": assays_result,
-            "assays_method": assays_method,
-            "pesticide_spec": pesticide_spec,
-            "pesticide_result": pesticide_result,
-            "pesticide_method": pesticide_method,
-            "residual_solvent_spec": residual_solvent_spec,
-            "residual_solvent_result": residual_solvent_result,
-            "residual_solvent_method": residual_solvent_method,
-            "total_plate_count_spec": total_plate_count_spec,
-            "total_plate_count_result": total_plate_count_result,
-            "total_plate_count_method": total_plate_count_method,
-            "yeasts_mould_spec": yeasts_mould_spec,
-            "yeasts_mould_result": yeasts_mould_result,
-            "yeasts_mould_method": yeasts_mould_method,
-            "salmonella_spec": salmonella_spec,
-            "salmonella_result": salmonella_result,
-            "salmonella_method": salmonella_method,
-            "e_coli_spec": e_coli_spec,
-            "e_coli_result": e_coli_result,
-            "e_coli_method": e_coli_method,
-            "coliforms_spec": coliforms_spec,
-            "coliforms_result": coliforms_result,
-            "coliforms_method": coliforms_method,
+            "description_spec": st.session_state["description_spec"],
+            "description_result": st.session_state["description_result"],
+            "description_method": st.session_state["description_method"],
+
+            "identification_spec": st.session_state["identification_spec"],
+            "identification_result": st.session_state["identification_result"],
+            "identification_method": st.session_state["identification_method"],
+
+            "loss_on_drying_spec": st.session_state["loss_on_drying_spec"],
+            "loss_on_drying_result": st.session_state["loss_on_drying_result"],
+            "loss_on_drying_method": st.session_state["loss_on_drying_method"],
+
+            "moisture_spec": st.session_state["moisture_spec"],
+            "moisture_result": st.session_state["moisture_result"],
+            "moisture_method": st.session_state["moisture_method"],
+
+            "particle_size_spec": st.session_state["particle_size_spec"],
+            "particle_size_result": st.session_state["particle_size_result"],
+            "particle_size_method": st.session_state["particle_size_method"],
+
+            "ash_contents_spec": st.session_state["ash_contents_spec"],
+            "ash_contents_result": st.session_state["ash_contents_result"],
+            "ash_contents_method": st.session_state["ash_contents_method"],
+
+            "residue_on_ignition_spec": st.session_state["residue_on_ignition_spec"],
+            "residue_on_ignition_result": st.session_state["residue_on_ignition_result"],
+            "residue_on_ignition_method": st.session_state["residue_on_ignition_method"],
+
+            "bulk_density_spec": st.session_state["bulk_density_spec"],
+            "bulk_density_result": st.session_state["bulk_density_result"],
+            "bulk_density_method": st.session_state["bulk_density_method"],
+
+            "tapped_density_spec": st.session_state["tapped_density_spec"],
+            "tapped_density_result": st.session_state["tapped_density_result"],
+            "tapped_density_method": st.session_state["tapped_density_method"],
+
+            "solubility_spec": st.session_state["solubility_spec"],
+            "solubility_result": st.session_state["solubility_result"],
+            "solubility_method": st.session_state["solubility_method"],
+
+            "ph_spec": st.session_state["ph_spec"],
+            "ph_result": st.session_state["ph_result"],
+            "ph_method": st.session_state["ph_method"],
+
+            "chlorides_nacl_spec": st.session_state["chlorides_nacl_spec"],
+            "chlorides_nacl_result": st.session_state["chlorides_nacl_result"],
+            "chlorides_nacl_method": st.session_state["chlorides_nacl_method"],
+
+            "sulphates_spec": st.session_state["sulphates_spec"],
+            "sulphates_result": st.session_state["sulphates_result"],
+            "sulphates_method": st.session_state["sulphates_method"],
+
+            "fats_spec": st.session_state["fats_spec"],
+            "fats_result": st.session_state["fats_result"],
+            "fats_method": st.session_state["fats_method"],
+
+            "protein_spec": st.session_state["protein_spec"],
+            "protein_result": st.session_state["protein_result"],
+            "protein_method": st.session_state["protein_method"],
+
+            "total_ig_g_spec": st.session_state["total_ig_g_spec"],
+            "total_ig_g_result": st.session_state["total_ig_g_result"],
+            "total_ig_g_method": st.session_state["total_ig_g_method"],
+
+            "sodium_spec": st.session_state["sodium_spec"],
+            "sodium_result": st.session_state["sodium_result"],
+            "sodium_method": st.session_state["sodium_method"],
+
+            "gluten_spec": st.session_state["gluten_spec"],
+            "gluten_result": st.session_state["gluten_result"],
+            "gluten_method": st.session_state["gluten_method"],
+
+            "lead_spec": st.session_state["lead_spec"],
+            "lead_result": st.session_state["lead_result"],
+            "lead_method": st.session_state["lead_method"],
+
+            "cadmium_spec": st.session_state["cadmium_spec"],
+            "cadmium_result": st.session_state["cadmium_result"],
+            "cadmium_method": st.session_state["cadmium_method"],
+
+            "arsenic_spec": st.session_state["arsenic_spec"],
+            "arsenic_result": st.session_state["arsenic_result"],
+            "arsenic_method": st.session_state["arsenic_method"],
+
+            "mercury_spec": st.session_state["mercury_spec"],
+            "mercury_result": st.session_state["mercury_result"],
+            "mercury_method": st.session_state["mercury_method"],
+
+            "assays_spec": st.session_state["assays_spec"],
+            "assays_result": st.session_state["assays_result"],
+            "assays_method": st.session_state["assays_method"],
+
+            "pesticide_spec": st.session_state["pesticide_spec"],
+            "pesticide_result": st.session_state["pesticide_result"],
+            "pesticide_method": st.session_state["pesticide_method"],
+
+            "residual_solvent_spec": st.session_state["residual_solvent_spec"],
+            "residual_solvent_result": st.session_state["residual_solvent_result"],
+            "residual_solvent_method": st.session_state["residual_solvent_method"],
+
+            "total_plate_count_spec": st.session_state["total_plate_count_spec"],
+            "total_plate_count_result": st.session_state["total_plate_count_result"],
+            "total_plate_count_method": st.session_state["total_plate_count_method"],
+
+            "yeasts_mould_spec": st.session_state["yeasts_mould_spec"],
+            "yeasts_mould_result": st.session_state["yeasts_mould_result"],
+            "yeasts_mould_method": st.session_state["yeasts_mould_method"],
+
+            "salmonella_spec": st.session_state["salmonella_spec"],
+            "salmonella_result": st.session_state["salmonella_result"],
+            "salmonella_method": st.session_state["salmonella_method"],
+
+            "e_coli_spec": st.session_state["e_coli_spec"],
+            "e_coli_result": st.session_state["e_coli_result"],
+            "e_coli_method": st.session_state["e_coli_method"],
+
+            "coliforms_spec": st.session_state["coliforms_spec"],
+            "coliforms_result": st.session_state["coliforms_result"],
+            "coliforms_method": st.session_state["coliforms_method"],
 
             "allergen_statement": allergen_statement,
 
@@ -812,96 +1203,100 @@ with col1:
             "plant_part": plant_part,
             "extraction_ratio": extraction_ratio,
             "solvent": solvent,
-            "description_spec": description_spec,
-            "description_result": description_result,
-            "description_method": description_method,
-            "identification_spec": identification_spec,
-            "identification_result": identification_result,
-            "identification_method": identification_method,
-            "loss_on_drying_spec": loss_on_drying_spec,
-            "loss_on_drying_result": loss_on_drying_result,
-            "loss_on_drying_method": loss_on_drying_method,
-            "moisture_spec": moisture_spec,
-            "moisture_result": moisture_result,
-            "moisture_method": moisture_method,
-            "particle_size_spec": particle_size_spec,
-            "particle_size_result": particle_size_result,
-            "particle_size_method": particle_size_method,
-            "ash_contents_spec": ash_contents_spec,
-            "ash_contents_result": ash_contents_result,
-            "ash_contents_method": ash_contents_method,
-            "residue_on_ignition_spec": residue_on_ignition_spec,
-            "residue_on_ignition_result": residue_on_ignition_result,
-            "residue_on_ignition_method": residue_on_ignition_method,
-            "bulk_density_spec": bulk_density_spec,
-            "bulk_density_result": bulk_density_result,
-            "bulk_density_method": bulk_density_method,
-            "tapped_density_spec": tapped_density_spec,
-            "tapped_density_result": tapped_density_result,
-            "tapped_density_method": tapped_density_method,
-            "solubility_spec": solubility_spec,
-            "solubility_result": solubility_result,
-            "solubility_method": solubility_method,
-            "ph_spec": ph_spec,
-            "ph_result": ph_result,
-            "ph_method": ph_method,
-            "chlorides_nacl_spec": chlorides_nacl_spec,
-            "chlorides_nacl_result": chlorides_nacl_result,
-            "chlorides_nacl_method": chlorides_nacl_method,
-            "sulphates_spec": sulphates_spec,
-            "sulphates_result": sulphates_result,
-            "sulphates_method": sulphates_method,
-            "fats_spec": fats_spec,
-            "fats_result": fats_result,
-            "fats_method": fats_method,
-            "protein_spec": protein_spec,
-            "protein_result": protein_result,
-            "protein_method": protein_method,
-            "total_ig_g_spec": total_ig_g_spec,
-            "total_ig_g_result": total_ig_g_result,
-            "total_ig_g_method": total_ig_g_method,
-            "sodium_spec": sodium_spec,
-            "sodium_result": sodium_result,
-            "sodium_method": sodium_method,
-            "gluten_spec": gluten_spec,
-            "gluten_result": gluten_result,
-            "gluten_method": gluten_method,
-            "lead_spec": lead_spec,
-            "lead_result": lead_result,
-            "lead_method": lead_method,
-            "cadmium_spec": cadmium_spec,
-            "cadmium_result": cadmium_result,
-            "cadmium_method": cadmium_method,
-            "arsenic_spec": arsenic_spec,
-            "arsenic_result": arsenic_result,
-            "arsenic_method": arsenic_method,
-            "mercury_spec": mercury_spec,
-            "mercury_result": mercury_result,
-            "mercury_method": mercury_method,
-            "assays_spec": assays_spec,
-            "assays_result": assays_result,
-            "assays_method": assays_method,
-            "pesticide_spec": pesticide_spec,
-            "pesticide_result": pesticide_result,
-            "pesticide_method": pesticide_method,
-            "residual_solvent_spec": residual_solvent_spec,
-            "residual_solvent_result": residual_solvent_result,
-            "residual_solvent_method": residual_solvent_method,
-            "total_plate_count_spec": total_plate_count_spec,
-            "total_plate_count_result": total_plate_count_result,
-            "total_plate_count_method": total_plate_count_method,
-            "yeasts_mould_spec": yeasts_mould_spec,
-            "yeasts_mould_result": yeasts_mould_result,
-            "yeasts_mould_method": yeasts_mould_method,
-            "salmonella_spec": salmonella_spec,
-            "salmonella_result": salmonella_result,
-            "salmonella_method": salmonella_method,
-            "e_coli_spec": e_coli_spec,
-            "e_coli_result": e_coli_result,
-            "e_coli_method": e_coli_method,
-            "coliforms_spec": coliforms_spec,
-            "coliforms_result": coliforms_result,
-            "coliforms_method": coliforms_method,
+
+            "description_spec": st.session_state["description_spec"],
+            "description_result": st.session_state["description_result"],
+            "description_method": st.session_state["description_method"],
+            "identification_spec": st.session_state["identification_spec"],
+            "identification_result": st.session_state["identification_result"],
+            "identification_method": st.session_state["identification_method"],
+            "loss_on_drying_spec": st.session_state["loss_on_drying_spec"],
+            "loss_on_drying_result": st.session_state["loss_on_drying_result"],
+            "loss_on_drying_method": st.session_state["loss_on_drying_method"],
+            "moisture_spec": st.session_state["moisture_spec"],
+            "moisture_result": st.session_state["moisture_result"],
+            "moisture_method": st.session_state["moisture_method"],
+            "particle_size_spec": st.session_state["particle_size_spec"],
+            "particle_size_result": st.session_state["particle_size_result"],
+            "particle_size_method": st.session_state["particle_size_method"],
+            "ash_contents_spec": st.session_state["ash_contents_spec"],
+            "ash_contents_result": st.session_state["ash_contents_result"],
+            "ash_contents_method": st.session_state["ash_contents_method"],
+            "residue_on_ignition_spec": st.session_state["residue_on_ignition_spec"],
+            "residue_on_ignition_result": st.session_state["residue_on_ignition_result"],
+            "residue_on_ignition_method": st.session_state["residue_on_ignition_method"],
+            "bulk_density_spec": st.session_state["bulk_density_spec"],
+            "bulk_density_result": st.session_state["bulk_density_result"],
+            "bulk_density_method": st.session_state["bulk_density_method"],
+            "tapped_density_spec": st.session_state["tapped_density_spec"],
+            "tapped_density_result": st.session_state["tapped_density_result"],
+            "tapped_density_method": st.session_state["tapped_density_method"],
+            "solubility_spec": st.session_state["solubility_spec"],
+            "solubility_result": st.session_state["solubility_result"],
+            "solubility_method": st.session_state["solubility_method"],
+            "ph_spec": st.session_state["ph_spec"],
+            "ph_result": st.session_state["ph_result"],
+            "ph_method": st.session_state["ph_method"],
+            "chlorides_nacl_spec": st.session_state["chlorides_nacl_spec"],
+            "chlorides_nacl_result": st.session_state["chlorides_nacl_result"],
+            "chlorides_nacl_method": st.session_state["chlorides_nacl_method"],
+            "sulphates_spec": st.session_state["sulphates_spec"],
+            "sulphates_result": st.session_state["sulphates_result"],
+            "sulphates_method": st.session_state["sulphates_method"],
+            "fats_spec": st.session_state["fats_spec"],
+            "fats_result": st.session_state["fats_result"],
+            "fats_method": st.session_state["fats_method"],
+            "protein_spec": st.session_state["protein_spec"],
+            "protein_result": st.session_state["protein_result"],
+            "protein_method": st.session_state["protein_method"],
+            "total_ig_g_spec": st.session_state["total_ig_g_spec"],
+            "total_ig_g_result": st.session_state["total_ig_g_result"],
+            "total_ig_g_method": st.session_state["total_ig_g_method"],
+            "sodium_spec": st.session_state["sodium_spec"],
+            "sodium_result": st.session_state["sodium_result"],
+            "sodium_method": st.session_state["sodium_method"],
+            "gluten_spec": st.session_state["gluten_spec"],
+            "gluten_result": st.session_state["gluten_result"],
+            "gluten_method": st.session_state["gluten_method"],
+
+            "lead_spec": st.session_state["lead_spec"],
+            "lead_result": st.session_state["lead_result"],
+            "lead_method": st.session_state["lead_method"],
+            "cadmium_spec": st.session_state["cadmium_spec"],
+            "cadmium_result": st.session_state["cadmium_result"],
+            "cadmium_method": st.session_state["cadmium_method"],
+            "arsenic_spec": st.session_state["arsenic_spec"],
+            "arsenic_result": st.session_state["arsenic_result"],
+            "arsenic_method": st.session_state["arsenic_method"],
+            "mercury_spec": st.session_state["mercury_spec"],
+            "mercury_result": st.session_state["mercury_result"],
+            "mercury_method": st.session_state["mercury_method"],
+
+            "assays_spec": st.session_state["assays_spec"],
+            "assays_result": st.session_state["assays_result"],
+            "assays_method": st.session_state["assays_method"],
+            "pesticide_spec": st.session_state["pesticide_spec"],
+            "pesticide_result": st.session_state["pesticide_result"],
+            "pesticide_method": st.session_state["pesticide_method"],
+            "residual_solvent_spec": st.session_state["residual_solvent_spec"],
+            "residual_solvent_result": st.session_state["residual_solvent_result"],
+            "residual_solvent_method": st.session_state["residual_solvent_method"],
+            "total_plate_count_spec": st.session_state["total_plate_count_spec"],
+            "total_plate_count_result": st.session_state["total_plate_count_result"],
+            "total_plate_count_method": st.session_state["total_plate_count_method"],
+            "yeasts_mould_spec": st.session_state["yeasts_mould_spec"],
+            "yeasts_mould_result": st.session_state["yeasts_mould_result"],
+            "yeasts_mould_method": st.session_state["yeasts_mould_method"],
+            "salmonella_spec": st.session_state["salmonella_spec"],
+            "salmonella_result": st.session_state["salmonella_result"],
+            "salmonella_method": st.session_state["salmonella_method"],
+            "e_coli_spec": st.session_state["e_coli_spec"],
+            "e_coli_result": st.session_state["e_coli_result"],
+            "e_coli_method": st.session_state["e_coli_method"],
+            "coliforms_spec": st.session_state["coliforms_spec"],
+            "coliforms_result": st.session_state["coliforms_result"],
+            "coliforms_method": st.session_state["coliforms_method"],
+
             "allergen_statement": allergen_statement,
 
             "physical_extra_rows": [
