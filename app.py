@@ -86,7 +86,7 @@ def generate_pdf(data):
         if text_str:
             if italic:
                 text_str = f"<i>{text_str}</i>"
-            product_info.append([label, Paragraph(text_str, normal_style)])
+            product_info.append([Paragraph(f"<b>{label}</b>"), Paragraph(text_str, normal_style)])
 
     maybe_add_product_row("Product Name", data.get('product_name', ''))
     maybe_add_product_row("Product Code", data.get('product_code', ''))
