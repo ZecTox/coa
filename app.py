@@ -73,7 +73,7 @@ def generate_pdf(data):
     elements = []
     elements.append(Spacer(1, 3))
     elements.append(Paragraph("CERTIFICATE OF ANALYSIS", title_style))
-    elements.append(Paragraph(data.get('product_name', ''), title_style))
+    elements.append(Paragraph(data.get('product_name', '').upper(), title_style)) #Added the Product Name here in CapsLock(All in Uppercase)
     elements.append(Spacer(1, 3))
 
     # ----------------------------------------------------------------
