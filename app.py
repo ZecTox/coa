@@ -30,6 +30,8 @@ if "ResidualSolvent_rows" not in st.session_state:
     st.session_state["ResidualSolvent_rows"] = []
 if "MicrobiologicalProfile_rows" not in st.session_state:
     st.session_state["MicrobiologicalProfile_rows"] = []
+if "Product_rows" not in st.session_state:
+    st.session_state["Product_rows"] = []
 
 # Initialize the configparser
 config = configparser.ConfigParser()
@@ -73,7 +75,7 @@ def generate_pdf(data):
     elements = []
     elements.append(Spacer(1, 3))
     elements.append(Paragraph("CERTIFICATE OF ANALYSIS", title_style))
-    elements.append(Paragraph(data.get('product_name', '').upper(), title_style)) #Added the Product Name here in CapsLock(All in Uppercase)
+    elements.append(Paragraph(data.get('product_name', '').upper(), title_style))
     elements.append(Spacer(1, 3))
 
     # ----------------------------------------------------------------
@@ -100,6 +102,9 @@ def generate_pdf(data):
     maybe_add_product_row("CAS No.", data.get('cas_no', ''))
     maybe_add_product_row("Chemical Name", data.get('chemical_name', ''))
     maybe_add_product_row("Quantity", data.get('quantity', ''))
+    # Add dynamic additional product info rows (if any)
+    for row in data.get("product_additional_rows", []):
+        maybe_add_product_row(row[0], row[1])
     maybe_add_product_row("Country of Origin", data.get('origin', ''))
 
     if product_info:
@@ -346,6 +351,27 @@ with col1:
     row6_col1, row6_col2 = st.columns(2)
     chemical_name = row6_col1.text_input("Chemical Name", placeholder="X")
     quantity = row6_col2.text_input("Quantity", placeholder="X")
+
+    st.markdown("#### Add Additional Product Info Rows")
+    for i, row_data in enumerate(st.session_state["Product_rows"]):
+        col_label, col_value, col_del = st.columns([3, 7, 2])
+        st.session_state["Product_rows"][i]["label"] = col_label.text_input(
+            f"Additional Label {i+1}",
+            row_data.get("label", ""),
+            key=f"ProductLabel_{i}"
+        )
+        st.session_state["Product_rows"][i]["value"] = col_value.text_input(
+            f"Additional Value {i+1}",
+            row_data.get("value", ""),
+            key=f"ProductValue_{i}"
+        )
+        if col_del.button("Delete", key=f"del_product_{i}"):
+            st.session_state["Product_rows"].pop(i)
+            st.rerun()
+
+    if st.button("Add New Additional Product Info Row"):
+        st.session_state["Product_rows"].append({"label": "", "value": ""})
+        st.rerun()
 
     origin = st.text_input("Country of Origin", value="India")
 
@@ -1027,9 +1053,6 @@ with col1:
             "reanalysis_date": reanalysis_date,
             "quantity": quantity,
             "origin": origin,
-            "plant_part": plant_part,
-            "extraction_ratio": extraction_ratio,
-            "solvent": solvent,
 
             "description_spec": st.session_state["description_spec"],
             "description_result": st.session_state["description_result"],
@@ -1176,6 +1199,10 @@ with col1:
             "microbio_extra_rows": [
                 (row["param"], row["spec"], row["result"], row["method"])
                 for row in st.session_state["MicrobiologicalProfile_rows"]
+            ],
+            "product_additional_rows": [
+                (row["label"], row["value"])
+                for row in st.session_state["Product_rows"]
             ],
         }
 
@@ -1200,61 +1227,75 @@ with col1:
             "reanalysis_date": reanalysis_date,
             "quantity": quantity,
             "origin": origin,
-            "plant_part": plant_part,
-            "extraction_ratio": extraction_ratio,
-            "solvent": solvent,
 
             "description_spec": st.session_state["description_spec"],
             "description_result": st.session_state["description_result"],
             "description_method": st.session_state["description_method"],
+
             "identification_spec": st.session_state["identification_spec"],
             "identification_result": st.session_state["identification_result"],
             "identification_method": st.session_state["identification_method"],
+
             "loss_on_drying_spec": st.session_state["loss_on_drying_spec"],
             "loss_on_drying_result": st.session_state["loss_on_drying_result"],
             "loss_on_drying_method": st.session_state["loss_on_drying_method"],
+
             "moisture_spec": st.session_state["moisture_spec"],
             "moisture_result": st.session_state["moisture_result"],
             "moisture_method": st.session_state["moisture_method"],
+
             "particle_size_spec": st.session_state["particle_size_spec"],
             "particle_size_result": st.session_state["particle_size_result"],
             "particle_size_method": st.session_state["particle_size_method"],
+
             "ash_contents_spec": st.session_state["ash_contents_spec"],
             "ash_contents_result": st.session_state["ash_contents_result"],
             "ash_contents_method": st.session_state["ash_contents_method"],
+
             "residue_on_ignition_spec": st.session_state["residue_on_ignition_spec"],
             "residue_on_ignition_result": st.session_state["residue_on_ignition_result"],
             "residue_on_ignition_method": st.session_state["residue_on_ignition_method"],
+
             "bulk_density_spec": st.session_state["bulk_density_spec"],
             "bulk_density_result": st.session_state["bulk_density_result"],
             "bulk_density_method": st.session_state["bulk_density_method"],
+
             "tapped_density_spec": st.session_state["tapped_density_spec"],
             "tapped_density_result": st.session_state["tapped_density_result"],
             "tapped_density_method": st.session_state["tapped_density_method"],
+
             "solubility_spec": st.session_state["solubility_spec"],
             "solubility_result": st.session_state["solubility_result"],
             "solubility_method": st.session_state["solubility_method"],
+
             "ph_spec": st.session_state["ph_spec"],
             "ph_result": st.session_state["ph_result"],
             "ph_method": st.session_state["ph_method"],
+
             "chlorides_nacl_spec": st.session_state["chlorides_nacl_spec"],
             "chlorides_nacl_result": st.session_state["chlorides_nacl_result"],
             "chlorides_nacl_method": st.session_state["chlorides_nacl_method"],
+
             "sulphates_spec": st.session_state["sulphates_spec"],
             "sulphates_result": st.session_state["sulphates_result"],
             "sulphates_method": st.session_state["sulphates_method"],
+
             "fats_spec": st.session_state["fats_spec"],
             "fats_result": st.session_state["fats_result"],
             "fats_method": st.session_state["fats_method"],
+
             "protein_spec": st.session_state["protein_spec"],
             "protein_result": st.session_state["protein_result"],
             "protein_method": st.session_state["protein_method"],
+
             "total_ig_g_spec": st.session_state["total_ig_g_spec"],
             "total_ig_g_result": st.session_state["total_ig_g_result"],
             "total_ig_g_method": st.session_state["total_ig_g_method"],
+
             "sodium_spec": st.session_state["sodium_spec"],
             "sodium_result": st.session_state["sodium_result"],
             "sodium_method": st.session_state["sodium_method"],
+
             "gluten_spec": st.session_state["gluten_spec"],
             "gluten_result": st.session_state["gluten_result"],
             "gluten_method": st.session_state["gluten_method"],
@@ -1262,12 +1303,15 @@ with col1:
             "lead_spec": st.session_state["lead_spec"],
             "lead_result": st.session_state["lead_result"],
             "lead_method": st.session_state["lead_method"],
+
             "cadmium_spec": st.session_state["cadmium_spec"],
             "cadmium_result": st.session_state["cadmium_result"],
             "cadmium_method": st.session_state["cadmium_method"],
+
             "arsenic_spec": st.session_state["arsenic_spec"],
             "arsenic_result": st.session_state["arsenic_result"],
             "arsenic_method": st.session_state["arsenic_method"],
+
             "mercury_spec": st.session_state["mercury_spec"],
             "mercury_result": st.session_state["mercury_result"],
             "mercury_method": st.session_state["mercury_method"],
@@ -1275,24 +1319,31 @@ with col1:
             "assays_spec": st.session_state["assays_spec"],
             "assays_result": st.session_state["assays_result"],
             "assays_method": st.session_state["assays_method"],
+
             "pesticide_spec": st.session_state["pesticide_spec"],
             "pesticide_result": st.session_state["pesticide_result"],
             "pesticide_method": st.session_state["pesticide_method"],
+
             "residual_solvent_spec": st.session_state["residual_solvent_spec"],
             "residual_solvent_result": st.session_state["residual_solvent_result"],
             "residual_solvent_method": st.session_state["residual_solvent_method"],
+
             "total_plate_count_spec": st.session_state["total_plate_count_spec"],
             "total_plate_count_result": st.session_state["total_plate_count_result"],
             "total_plate_count_method": st.session_state["total_plate_count_method"],
+
             "yeasts_mould_spec": st.session_state["yeasts_mould_spec"],
             "yeasts_mould_result": st.session_state["yeasts_mould_result"],
             "yeasts_mould_method": st.session_state["yeasts_mould_method"],
+
             "salmonella_spec": st.session_state["salmonella_spec"],
             "salmonella_result": st.session_state["salmonella_result"],
             "salmonella_method": st.session_state["salmonella_method"],
+
             "e_coli_spec": st.session_state["e_coli_spec"],
             "e_coli_result": st.session_state["e_coli_result"],
             "e_coli_method": st.session_state["e_coli_method"],
+
             "coliforms_spec": st.session_state["coliforms_spec"],
             "coliforms_result": st.session_state["coliforms_result"],
             "coliforms_method": st.session_state["coliforms_method"],
@@ -1322,6 +1373,10 @@ with col1:
             "microbio_extra_rows": [
                 (row["param"], row["spec"], row["result"], row["method"])
                 for row in st.session_state["MicrobiologicalProfile_rows"]
+            ],
+            "product_additional_rows": [
+                (row["label"], row["value"])
+                for row in st.session_state["Product_rows"]
             ],
         }
 
