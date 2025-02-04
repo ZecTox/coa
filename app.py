@@ -1,4 +1,5 @@
 import os
+from pickle import TRUE
 from typing import Container
 import streamlit as st
 
@@ -339,12 +340,17 @@ def generate_pdf(data):
     elements.append(declaration_table)
     elements.append(Spacer(1, 3))
 
-    # Force single page
+    # Compute available dimensions from the page size and margins
+    available_width = A4[0] - doc.leftMargin - doc.rightMargin
+    available_height = A4[1] - doc.topMargin - doc.bottomMargin
+
+    # Use KeepInFrame with improved fakeWidth:
     kiframe = KeepInFrame(
-        maxWidth=A4[0] - doc.leftMargin - doc.rightMargin,
-        maxHeight=A4[1] - doc.topMargin - doc.bottomMargin,
+        maxWidth=available_width,
+        maxHeight=available_height,
         content=elements,
-        mode='shrink'
+        mode='shrink',            # or any mode you prefer
+        fakeWidth=available_width   # now dynamically computed instead of a fixed 1900
     )
     elements = [kiframe]
 
