@@ -10,6 +10,7 @@ from reportlab.platypus import (
     KeepInFrame
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
 
 import io
 import fitz  # PyMuPDF
@@ -122,7 +123,23 @@ def generate_pdf(data):
     # ----------------------------------------------------------------
     # SPECIFICATIONS TABLE
     # ----------------------------------------------------------------
-    spec_headers = ["Parameter", "Specification", "Result", "Method"]
+    
+    # Header style for the table header    
+
+    header_style = ParagraphStyle(
+        'header_style',
+        parent=styles['Normal'],
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        fontSize=10
+    )
+    
+    spec_headers = [
+        Paragraph("Parameter", header_style),
+        Paragraph("Specification", header_style),
+        Paragraph("Result", header_style),
+        Paragraph("Method", header_style)
+    ]
     spec_data = [spec_headers]
     heading_rows = []
     current_row_index = 1
