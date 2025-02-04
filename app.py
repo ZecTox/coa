@@ -84,14 +84,16 @@ def generate_pdf(data):
     # ----------------------------------------------------------------
     product_info = []
 
-    def maybe_add_product_row(label, value, italic=False):
+    def maybe_add_product_row(label, value, italic=False, bold=False):
         text_str = value.strip() if value else ""
         if text_str:
             if italic:
                 text_str = f"<i>{text_str}</i>"
+            if bold:
+                text_str = f"<b>{text_str}</b>"
             product_info.append([Paragraph(f"<b>{label}</b>"), Paragraph(text_str, normal_style)])
 
-    maybe_add_product_row("Product Name", data.get('product_name', ''))
+    maybe_add_product_row("Product Name", data.get('product_name', ''), bold=True)
     maybe_add_product_row("Product Code", data.get('product_code', ''))
     maybe_add_product_row("Batch No.", data.get('batch_no', ''))
     maybe_add_product_row("Date of Manufacturing", data.get('manufacturing_date', ''))
