@@ -64,13 +64,27 @@ def generate_pdf(data):
     )
     styles = getSampleStyleSheet()
 
-    title_style = ParagraphStyle('title_style', fontSize=12, spaceAfter=1,
-                                 alignment=1, fontName='Times-Bold')
-    title_style1 = ParagraphStyle('title_style1', fontSize=10, spaceAfter=0,
-                                  alignment=1, fontName='Times-Bold')
+    title_style = ParagraphStyle(
+        'title_style',
+        fontSize=12,
+        spaceAfter=1,
+        alignment=1,
+        fontName='Times-Bold'
+    )
+    title_style1 = ParagraphStyle(
+        'title_style1',
+        fontSize=10,
+        spaceAfter=0,
+        alignment=1,
+        fontName='Times-Bold'
+    )
     normal_style = styles['BodyText']
     normal_style.fontName = 'Times-Roman'
-    normal_style.alignment = 0
+    normal_style.alignment = 0  # left aligned
+
+    # NEW: Define a style for the Method column that center aligns the text.
+    method_style = ParagraphStyle('method_style', parent=normal_style, alignment=1)
+    
     style_for_sections = styles["Normal"]
 
     elements = []
@@ -126,12 +140,10 @@ def generate_pdf(data):
     # SPECIFICATIONS TABLE
     # ----------------------------------------------------------------
     
-    # Header style for the table header    
-
     header_style = ParagraphStyle(
         'header_style',
         parent=styles['Normal'],
-        alignment=TA_CENTER,
+        alignment=1,  # center aligned
         fontName='Helvetica-Bold',
         fontSize=10
     )
@@ -238,7 +250,11 @@ def generate_pdf(data):
             spec_data.append([Paragraph(f"<b>{section_name}</b>", style_for_sections), "", "", ""])
             heading_rows.append(len(spec_data) - 1)
             for param_tuple in rows:
-                row_cells = [Paragraph(str(cell), normal_style) for cell in param_tuple]
+                # Use method_style (center aligned) for column 3, normal_style for others
+                row_cells = [
+                    Paragraph(str(cell), method_style) if idx == 3 else Paragraph(str(cell), normal_style)
+                    for idx, cell in enumerate(param_tuple)
+                ]
                 spec_data.append(row_cells)
 
     # Remarks
@@ -247,8 +263,10 @@ def generate_pdf(data):
     end_text = "REMARKS: COMPLIES WITH IN HOUSE SPECIFICATIONS"
     spec_data.append([Paragraph(remarks_text, normal_style), "", "", ""])
     last_remarks_row = len(spec_data) - 1
-    spec_data.append([Paragraph(end_text, ParagraphStyle('bold_center', parent=styles['Normal'],
-                                                        fontName='Helvetica-Bold', alignment=1)),
+    spec_data.append([Paragraph(end_text, ParagraphStyle('bold_center',
+                                                         parent=styles['Normal'],
+                                                         fontName='Helvetica-Bold',
+                                                         alignment=1)),
                       "", "", ""])
     final_remark_row = len(spec_data) - 1
 
@@ -257,6 +275,7 @@ def generate_pdf(data):
                   total_width * 0.39,
                   total_width * 0.18,
                   total_width * 0.20]
+    
     spec_table = Table(spec_data, colWidths=col_widths)
 
     spec_table_style = [
@@ -267,6 +286,9 @@ def generate_pdf(data):
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('WORDWRAP', (0, 0), (-1, -1), 'LTR'),
     ]
+    # (The table style alignment for column 3 below is now optional since our Paragraph style takes precedence.)
+    spec_table_style.append(('ALIGN', (3, 0), (3, -1), 'CENTER'))
+    
     for heading_row in heading_rows:
         spec_table_style.append(('SPAN', (0, heading_row), (-1, heading_row)))
     spec_table_style.append(('SPAN', (0, last_remarks_row), (-1, last_remarks_row)))
