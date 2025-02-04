@@ -818,18 +818,35 @@ with col1:
 
     # ASSAYS
     st.subheader("Assays")
+    init_ss("assays_param", "")
     init_ss("assays_spec", "")
     init_ss("assays_result", "")
     init_ss("assays_method", "")
 
-    assays_1 = st.columns([3, 2.5, 2.5, 2])
-    st.session_state["assays_spec"] = assays_1[0].text_input("Specification for Assays",
-        value=st.session_state["assays_spec"], placeholder="X")
-    st.session_state["assays_result"] = assays_1[1].text_input("Result for Assays",
-        value=st.session_state["assays_result"], placeholder="X")
-    st.session_state["assays_method"] = assays_1[2].text_input("Method for Assays",
-        value=st.session_state["assays_method"], placeholder="X")
-    if assays_1[3].button("Delete", key="del_assays_base"):
+    # Create base row with 4 input fields and a delete button column
+    assays_1 = st.columns([3, 3, 2.5, 2.5, 2])
+    st.session_state["assays_param"] = assays_1[0].text_input(
+        "Parameter for Assays",
+        value=st.session_state["assays_param"],
+        placeholder="Enter parameter"
+    )
+    st.session_state["assays_spec"] = assays_1[1].text_input(
+        "Specification for Assays",
+        value=st.session_state["assays_spec"],
+        placeholder="Enter specification"
+    )
+    st.session_state["assays_result"] = assays_1[2].text_input(
+        "Result for Assays",
+        value=st.session_state["assays_result"],
+        placeholder="Enter result"
+    )
+    st.session_state["assays_method"] = assays_1[3].text_input(
+        "Method for Assays",
+        value=st.session_state["assays_method"],
+        placeholder="Enter method"
+    )
+    if assays_1[4].button("Delete", key="del_assays_base"):
+        st.session_state["assays_param"] = ""
         st.session_state["assays_spec"] = ""
         st.session_state["assays_result"] = ""
         st.session_state["assays_method"] = ""
@@ -837,18 +854,26 @@ with col1:
 
     st.markdown("#### Add Additional Assays Rows")
     for i, row_data in enumerate(st.session_state["Assays_rows"]):
-        c1, c2, c3, c4, del_col = st.columns([3, 2.5, 2.5, 2.5, 2])
+        c1, c2, c3, c4, del_col = st.columns([3, 3, 2.5, 2.5, 2])
         st.session_state["Assays_rows"][i]["param"] = c1.text_input(
-            f"Assays Parameter {i+1}", row_data.get("param",""), key=f"AssaysParam_{i}"
+            f"Assays Parameter {i+1}",
+            row_data.get("param", ""),
+            key=f"AssaysParam_{i}"
         )
         st.session_state["Assays_rows"][i]["spec"] = c2.text_input(
-            f"Assays Spec {i+1}", row_data.get("spec",""), key=f"AssaysSpec_{i}"
+            f"Assays Spec {i+1}",
+            row_data.get("spec", ""),
+            key=f"AssaysSpec_{i}"
         )
         st.session_state["Assays_rows"][i]["result"] = c3.text_input(
-            f"Assays Result {i+1}", row_data.get("result",""), key=f"AssaysResult_{i}"
+            f"Assays Result {i+1}",
+            row_data.get("result", ""),
+            key=f"AssaysResult_{i}"
         )
         st.session_state["Assays_rows"][i]["method"] = c4.text_input(
-            f"Assays Method {i+1}", row_data.get("method",""), key=f"AssaysMethod_{i}"
+            f"Assays Method {i+1}",
+            row_data.get("method", ""),
+            key=f"AssaysMethod_{i}"
         )
         if del_col.button("Delete", key=f"del_assays_{i}"):
             st.session_state["Assays_rows"].pop(i)
